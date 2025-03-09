@@ -35,9 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let filteredTabs = [];
   let currentFilter = 'all';
   let currentSort = 'recent';
-  let currentGrouping = 'none';
+  let currentGrouping = 'tree'; // Set tree view as default
   let customGroups = [];
   let searchQuery = '';
+  let currentWindowTabCount = 0;
 
   // Fetch all tabs
   const fetchTabs = async () => {

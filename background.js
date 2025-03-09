@@ -29,8 +29,30 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 // Function to notify all tab manager windows that tabs have been updated
 function notifyTabsUpdated() {
+  // Send message to tab manager windows
   chrome.runtime.sendMessage({
     action: 'tabsUpdated'
+  });
+  
+  // Update badge with tab count
+  updateBadgeWithTabCount();
+}
+
+// Function to update the extension badge with the current tab count
+function updateBadgeWithTabCount() {
+  chrome.tabs.query({}, (tabs) => {
+    const totalTabs = tabs.length;
+    
+    // Get current window to count tabs in current window
+    chrome.windows.getCurrent((currentWindow) => {
+      const tabsInCurrentWindow = tabs.filter(tab => tab.windowId === currentWindow.id).length;
+      
+      // Set the badge text to show current window tab count
+      chrome.action.setBadgeText({ text: tabsInCurrentWindow.toString() });
+      
+      // Set badge background color
+      chrome.action.setBadgeBackgroundColor({ color: '#4285F4' });
+    });
   });
 }
 
