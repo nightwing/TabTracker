@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const treeViewContainer = document.querySelector('.tree-view-container');
   const noResults = document.getElementById('no-results');
   const totalTabsElement = document.getElementById('total-tabs');
-  const totalDomainsElement = document.getElementById('total-domains');
+  const currentWindowTabsElement = document.getElementById('current-window-tabs');
   const filterAllButton = document.getElementById('filter-all');
   const filterCurrentWindowButton = document.getElementById('filter-current-window');
   const sortButton = document.getElementById('sort-button');
@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let customGroups = [];
   let searchQuery = '';
   let currentWindowTabCount = 0;
+  let currentWindowId = null;
 
   // Fetch all tabs
   const fetchTabs = async () => {
@@ -114,11 +115,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Update statistics
   const updateStats = () => {
+    // Set total tabs count
     totalTabsElement.textContent = allTabs.length;
     
-    // Calculate unique domains
-    const domains = new Set(allTabs.map(tab => extractDomain(tab.url)));
-    totalDomainsElement.textContent = domains.size;
+    // Get the current window's tab count
+    chrome.windows.getCurrent((currentWindow) => {
+      currentWindowId = currentWindow.id;
+      const windowTabs = allTabs.filter(tab => tab.windowId === currentWindowId);
+      currentWindowTabCount = windowTabs.length;
+      
+      // Update current window tab count
+      currentWindowTabsElement.textContent = currentWindowTabCount;
+    });
   };
 
   // Render tabs in the UI
@@ -186,6 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Create window header
       const windowHeader = document.createElement('div');
       windowHeader.className = 'tree-window';
+      
+      // Add tooltip with window info
+      const windowInfo = `Window ${windowId} - ${tabs.length} tab${tabs.length > 1 ? 's' : ''}`;
+      windowHeader.title = windowInfo;
+      
       windowHeader.innerHTML = `
         <div class="window-title">
           <span data-feather="layout" class="icon"></span>
@@ -213,6 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
           // Create domain header
           const domainHeader = document.createElement('div');
           domainHeader.className = 'tree-domain';
+          
+          // Create tooltip with site count
+          const siteInfo = `${domain} - ${domainTabs.length} tab${domainTabs.length > 1 ? 's' : ''}`;
+          domainHeader.title = siteInfo;
           
           domainHeader.innerHTML = `
             <div class="domain-name">
@@ -250,10 +267,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const videoItem = document.createElement('div');
                 videoItem.className = 'video-item tab-item';
                 
+                // Add tooltip with video title and URL
+                videoItem.title = `${video.title || 'Unknown video'} - ${video.url}`;
+                
                 videoItem.innerHTML = `
                   <div class="queue-item-index">${index + 1}</div>
-                  <div class="tab-info">
-                    <div class="tab-title">${escapeHTML(video.title || 'Unknown video')}</div>
+                  <div class="tab-info" title="${video.url}">
+                    <div class="tab-title" title="${video.title || 'Unknown video'}">${escapeHTML(video.title || 'Unknown video')}</div>
                     <div class="tab-url">${escapeHTML(video.url)}</div>
                   </div>
                   <div class="tab-actions">
@@ -480,6 +500,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const groupHeader = document.createElement('div');
       groupHeader.className = 'tab-group-header';
       
+      // Add tooltip with window info
+      const windowInfo = `Window ${windowId} - ${tabs.length} tab${tabs.length > 1 ? 's' : ''}`;
+      groupHeader.title = windowInfo;
+      
       groupHeader.innerHTML = `
         <div class="tab-group-title">
           <span>Window ${windowId}</span>
@@ -557,6 +581,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabElement = document.createElement('div');
     tabElement.className = 'tab-item fade-in';
     
+    // Add tooltip with the URL
+    tabElement.title = tab.url;
+    
     const domain = extractDomain(tab.url);
     const faviconUrl = tab.favIconUrl || `https://www.google.com/s2/favicons?domain=${domain}`;
     
@@ -567,9 +594,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create the tab element HTML
     let tabHTML = `
       <img class="tab-favicon" src="${faviconUrl}" alt="">
-      <div class="tab-info">
-        <div class="tab-title">${escapeHTML(tab.title)}</div>
-        <div class="tab-url">${escapeHTML(tab.url)}</div>
+      <div class="tab-info" title="${tab.url}">
+        <div class="tab-title" title="${tab.title}">${escapeHTML(tab.title)}</div>
     `;
     
     // Add YouTube queue info if available

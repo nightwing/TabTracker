@@ -28,6 +28,7 @@ body {
 
 .tab-url {
   font-size: 13px;
+  display: none; /* Hide URL by default, it will be shown as tooltip */
 }
 
 /* Make buttons more visible in window mode */
@@ -70,7 +71,7 @@ html, body {
   }
   
   .tab-item {
-    padding: 10px 20px;
+    padding: 6px 15px;
   }
   
   .search-container,
@@ -356,13 +357,14 @@ html, body {
 }
 
 .tree-item .tab-item {
-  margin-top: 4px;
+  margin-top: 2px;
+  padding: 4px 10px;
 }
 
 .tree-window {
   display: flex;
   align-items: center;
-  padding: 8px 15px;
+  padding: 6px 12px;
   cursor: pointer;
   font-weight: 600;
   border-bottom: 1px solid var(--border-color);
@@ -383,11 +385,11 @@ html, body {
 .tree-domain {
   display: flex;
   align-items: center;
-  padding: 6px 10px;
+  padding: 5px 10px;
   cursor: pointer;
   font-weight: 500;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  margin-top: 5px;
+  margin-top: 3px;
   transition: background-color 0.2s;
 }
 
