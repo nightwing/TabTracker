@@ -1,11 +1,45 @@
 // Background script for Tab Tracker extension
 // This script runs in the background and keeps track of tabs
 
-// Track tab events for future features
+// Handle clicks on the browser action icon
+chrome.action.onClicked.addListener(() => {
+  // Open the tab manager in a new window
+  chrome.windows.create({
+    url: chrome.runtime.getURL('tab-manager.html'),
+    type: 'popup',
+    width: 450,
+    height: 700
+  });
+});
+
+// Track tab events and notify any open tab manager windows
+chrome.tabs.onCreated.addListener((tab) => {
+  notifyTabsUpdated();
+});
+
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+  notifyTabsUpdated();
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    notifyTabsUpdated();
+  }
+});
+
+// Function to notify all tab manager windows that tabs have been updated
+function notifyTabsUpdated() {
+  chrome.runtime.sendMessage({
+    action: 'tabsUpdated'
+  });
+}
+
+// Track tab events and handle YouTube queue persistence
 chrome.tabs.onCreated.addListener((tab) => {
   console.log('Tab created:', tab.id);
 });
 
+// Handle tab removal and YouTube queue preservation
 chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
   console.log('Tab removed:', tabId);
   
