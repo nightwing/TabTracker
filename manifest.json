@@ -3,7 +3,8 @@
   "name": "Tab Tracker",
   "version": "1.0",
   "description": "Track and organize all open browser tabs",
-  "permissions": ["tabs", "storage"],
+  "permissions": ["tabs", "storage", "scripting"],
+  "host_permissions": ["*://*.youtube.com/*"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {

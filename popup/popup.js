@@ -181,11 +181,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const domain = extractDomain(tab.url);
     const faviconUrl = tab.favIconUrl || `https://www.google.com/s2/favicons?domain=${domain}`;
     
+    // Check if this is a YouTube tab with a video queue
+    const isYouTubeTab = domain.includes('youtube.com') && tab.url.includes('watch') && tab.youtubeQueue;
+    const hasYouTubeQueue = isYouTubeTab && tab.youtubeQueue && tab.youtubeQueue.length > 0;
+    
     tabElement.innerHTML = `
       <img class="tab-favicon" src="${faviconUrl}" alt="">
       <div class="tab-info">
         <div class="tab-title">${escapeHTML(tab.title)}</div>
         <div class="tab-url">${escapeHTML(tab.url)}</div>
+        ${hasYouTubeQueue ? `
+          <div class="youtube-queue-info">
+            <button class="youtube-queue-toggle">
+              <i data-feather="list"></i> 
+              <span>${tab.youtubeQueue.length} videos in queue</span>
+              ${tab.hasRestoredQueue ? '<span class="queue-restored">(restored)</span>' : ''}
+            </button>
+          </div>
+        ` : ''}
       </div>
       <div class="tab-actions">
         <button class="tab-action-button switch-tab" title="Switch to tab">
@@ -202,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add event listeners
     tabElement.addEventListener('click', (e) => {
-      if (!e.target.closest('.tab-actions')) {
+      if (!e.target.closest('.tab-actions') && !e.target.closest('.youtube-queue-toggle')) {
         switchToTab(tab);
       }
     });
@@ -217,7 +230,108 @@ document.addEventListener('DOMContentLoaded', () => {
       closeTab(tab);
     });
     
+    // Add YouTube queue toggle listener if this tab has a queue
+    if (hasYouTubeQueue) {
+      const queueToggle = tabElement.querySelector('.youtube-queue-toggle');
+      if (queueToggle) {
+        queueToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleYouTubeQueueDisplay(tab, tabElement);
+        });
+      }
+    }
+    
     return tabElement;
+  };
+  
+  // Toggle YouTube queue display
+  const toggleYouTubeQueueDisplay = (tab, tabElement) => {
+    // Check if queue is already displayed
+    let queueContainer = tabElement.querySelector('.youtube-queue-container');
+    
+    if (queueContainer) {
+      // Queue is displayed, hide it
+      queueContainer.remove();
+    } else {
+      // Queue is not displayed, show it
+      queueContainer = document.createElement('div');
+      queueContainer.className = 'youtube-queue-container';
+      
+      // Create queue items
+      const queueItems = tab.youtubeQueue.map((video, index) => {
+        return `
+          <div class="youtube-queue-item" data-video-id="${video.videoId}" data-video-url="${video.url}">
+            <div class="queue-item-index">${index + 1}</div>
+            <div class="queue-item-info">
+              <div class="queue-item-title">${escapeHTML(video.title)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      queueContainer.innerHTML = `
+        <div class="youtube-queue-header">
+          <h3>Video Queue</h3>
+          ${tab.hasRestoredQueue ? 
+            `<button class="restore-queue-button" title="Restore this queue in the tab">
+               <i data-feather="refresh-cw"></i> Restore Queue
+             </button>` 
+            : ''}
+        </div>
+        <div class="youtube-queue-list">
+          ${queueItems}
+        </div>
+      `;
+      
+      // Replace Feather icons
+      feather.replace(queueContainer.querySelectorAll('[data-feather]'));
+      
+      // Add restore button listener if queue is restored
+      if (tab.hasRestoredQueue) {
+        const restoreButton = queueContainer.querySelector('.restore-queue-button');
+        if (restoreButton) {
+          restoreButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            restoreYouTubeQueue(tab);
+          });
+        }
+      }
+      
+      // Add queue item click listeners
+      queueContainer.querySelectorAll('.youtube-queue-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const videoUrl = item.dataset.videoUrl;
+          if (videoUrl) {
+            chrome.tabs.update(tab.id, { url: videoUrl }, () => {
+              window.close(); // Close popup after switching
+            });
+          }
+        });
+      });
+      
+      // Add queue container to tab element
+      tabElement.querySelector('.tab-info').appendChild(queueContainer);
+    }
+  };
+  
+  // Restore YouTube queue
+  const restoreYouTubeQueue = (tab) => {
+    // Get the first video URL
+    if (tab.youtubeQueue && tab.youtubeQueue.length > 0) {
+      const firstVideo = tab.youtubeQueue[0];
+      if (firstVideo.url) {
+        chrome.runtime.sendMessage({
+          action: 'restoreYouTubeQueue',
+          tabId: tab.id,
+          url: firstVideo.url
+        }, (response) => {
+          if (response && response.success) {
+            window.close(); // Close popup after restoring
+          }
+        });
+      }
+    }
   };
 
   // Switch to tab
