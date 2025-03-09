@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Tracker</title>
+    <link rel="stylesheet" href="popup.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="../assets/logo.svg" alt="Tab Tracker" width="24" height="24">
+                <h1>Tab Tracker</h1>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span id="total-tabs">0</span>
+                    <label>tabs</label>
+                </div>
+                <div class="stat-item">
+                    <span id="total-domains">0</span>
+                    <label>domains</label>
+                </div>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <i data-feather="search"></i>
+                <input type="text" id="search-input" placeholder="Search tabs...">
+                <button id="clear-search" class="clear-button">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="filters">
+            <button id="filter-all" class="filter-button active">All</button>
+            <button id="filter-current-window" class="filter-button">Current Window</button>
+            <div class="dropdown">
+                <button id="sort-button" class="filter-button">
+                    Sort
+                    <i data-feather="chevron-down"></i>
+                </button>
+                <div class="dropdown-content">
+                    <a href="#" data-sort="title">By Title</a>
+                    <a href="#" data-sort="domain">By Domain</a>
+                    <a href="#" data-sort="recent">Most Recent</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="domain-list-container">
+            <div id="domain-list">
+                <!-- Domain groups will be inserted here -->
+            </div>
+        </div>
+
+        <div class="tab-list-container">
+            <div id="tab-list">
+                <!-- Tabs will be inserted here -->
+            </div>
+            <div id="no-results" class="no-results hidden">
+                <i data-feather="search"></i>
+                <p>No tabs match your search</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="../utils.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>

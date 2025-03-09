@@ -1,0 +1,68 @@
+modules = ["nodejs-20", "python-3.11"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Web Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "browser_extension_test"
+
+[[workflows.workflow]]
+name = "Web Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m http.server 5000"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "browser_extension_test"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = """
+ls -la && echo \"
+This is a Chrome/Firefox browser extension with the following features:
+- Tracks all open tabs across windows
+- Shows tab counts and domain statistics
+- Allows searching across all tabs
+- Filtering by current window or all windows
+- Sorting by title, domain, or recency
+- Grouping by domains
+- Quick tab switching
+- Tab closing functionality
+
+The extension needs to be loaded in a browser's developer mode to be tested.\""""
+
+[deployment]
+run = ["sh", "-c", "python -m http.server 5000"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
