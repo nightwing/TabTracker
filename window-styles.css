@@ -316,3 +316,127 @@ html, body {
 #group-button {
   margin-left: 5px;
 }
+
+/* Tree View Styles */
+.tree-view {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree-item {
+  position: relative;
+  padding-left: 24px;
+}
+
+.tree-item.has-children:before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 12px;
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
+  transform: rotate(-45deg);
+  transition: transform 0.2s;
+}
+
+.tree-item.has-children.expanded:before {
+  transform: rotate(45deg);
+}
+
+.tree-item.has-children.expanded > .tree-content {
+  display: block;
+}
+
+.tree-item .tree-content {
+  display: none;
+  margin-left: -12px;
+}
+
+.tree-item .tab-item {
+  margin-top: 4px;
+}
+
+.tree-window {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  transition: background-color 0.2s;
+}
+
+.tree-window:hover {
+  background-color: var(--hover-color);
+}
+
+.tree-window .window-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tree-domain {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 5px;
+  transition: background-color 0.2s;
+}
+
+.tree-domain:hover {
+  background-color: var(--hover-color);
+}
+
+.tree-domain .domain-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tree-domain .domain-favicon {
+  width: 16px;
+  height: 16px;
+}
+
+.tree-item-count {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.tree-view-container {
+  display: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tree-view-container.visible {
+  display: block;
+}
+
+.video-item {
+  background-color: rgba(255, 0, 0, 0.05);
+  border-left: 2px solid rgba(255, 0, 0, 0.3);
+}
+
+.queue-item-index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border-radius: 50%;
+  font-size: 12px;
+  margin-right: 10px;
+}

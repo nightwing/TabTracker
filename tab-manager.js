@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const domainListContainer = document.querySelector('.domain-list-container');
   const groupList = document.getElementById('group-list');
   const groupListContainer = document.querySelector('.group-list-container');
+  const treeView = document.getElementById('tree-view');
+  const treeViewContainer = document.querySelector('.tree-view-container');
   const noResults = document.getElementById('no-results');
   const totalTabsElement = document.getElementById('total-tabs');
   const totalDomainsElement = document.getElementById('total-domains');
@@ -130,9 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // Hide all group containers initially
       domainListContainer.classList.remove('visible');
       groupListContainer.classList.remove('visible');
+      treeViewContainer.classList.remove('visible');
+      tabList.style.display = 'block';
       
       // Choose rendering mode based on current grouping
-      if (currentGrouping === 'domain') {
+      if (currentGrouping === 'tree') {
+        renderTreeView();
+      } else if (currentGrouping === 'domain') {
         renderDomainGroups();
       } else if (currentGrouping === 'window') {
         renderWindowGroups();
@@ -149,6 +155,168 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     }
+  };
+  
+  // Render tree view of tabs
+  const renderTreeView = () => {
+    treeView.innerHTML = '';
+    treeViewContainer.classList.add('visible');
+    tabList.style.display = 'none';
+    
+    // Group tabs by window
+    const windowGroups = {};
+    
+    filteredTabs.forEach(tab => {
+      if (!windowGroups[tab.windowId]) {
+        windowGroups[tab.windowId] = [];
+      }
+      windowGroups[tab.windowId].push(tab);
+    });
+    
+    // Create tree items for each window
+    Object.keys(windowGroups).forEach(windowId => {
+      const tabs = windowGroups[windowId];
+      
+      // Create window tree item
+      const windowItem = document.createElement('div');
+      windowItem.className = 'tree-item has-children';
+      windowItem.dataset.windowId = windowId;
+      
+      // Create window header
+      const windowHeader = document.createElement('div');
+      windowHeader.className = 'tree-window';
+      windowHeader.innerHTML = `
+        <div class="window-title">
+          <span data-feather="layout" class="icon"></span>
+          <span>Window ${windowId}</span>
+          <span class="tree-item-count">${tabs.length}</span>
+        </div>
+      `;
+      
+      // Create content container for tabs
+      const windowContent = document.createElement('div');
+      windowContent.className = 'tree-content';
+      
+      // Group tabs in this window by domain
+      const domainGroups = groupTabsByDomain(tabs);
+      
+      // Create tree items for each domain in this window
+      Object.keys(domainGroups).sort().forEach(domain => {
+        const domainTabs = domainGroups[domain];
+        
+        // Create domain tree item if there are multiple tabs in this domain
+        if (domainTabs.length > 1) {
+          const domainItem = document.createElement('div');
+          domainItem.className = 'tree-item has-children';
+          
+          // Create domain header
+          const domainHeader = document.createElement('div');
+          domainHeader.className = 'tree-domain';
+          
+          domainHeader.innerHTML = `
+            <div class="domain-name">
+              <img class="domain-favicon" src="https://www.google.com/s2/favicons?domain=${domain}" alt="">
+              <span>${domain}</span>
+              <span class="tree-item-count">${domainTabs.length}</span>
+            </div>
+          `;
+          
+          // Create content container for domain tabs
+          const domainContent = document.createElement('div');
+          domainContent.className = 'tree-content';
+          
+          // Add tabs to domain content
+          domainTabs.forEach(tab => {
+            const tabElement = createTabElement(tab);
+            
+            // Check if this is a YouTube tab with a queue
+            const isYouTubeTab = domain.includes('youtube.com') && tab.url.includes('watch');
+            const hasYouTubeQueue = tab.youtubeQueue && tab.youtubeQueue.length > 0;
+            
+            // If it's a YouTube tab with a queue, make it expandable
+            if (hasYouTubeQueue) {
+              const youtubeItem = document.createElement('div');
+              youtubeItem.className = 'tree-item has-children';
+              
+              youtubeItem.appendChild(tabElement);
+              
+              // Create content container for YouTube queue
+              const youtubeContent = document.createElement('div');
+              youtubeContent.className = 'tree-content';
+              
+              // Add YouTube queue items
+              tab.youtubeQueue.forEach((video, index) => {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'video-item tab-item';
+                
+                videoItem.innerHTML = `
+                  <div class="queue-item-index">${index + 1}</div>
+                  <div class="tab-info">
+                    <div class="tab-title">${escapeHTML(video.title || 'Unknown video')}</div>
+                    <div class="tab-url">${escapeHTML(video.url)}</div>
+                  </div>
+                  <div class="tab-actions">
+                    <button class="tab-action-button play-video" title="Play video">
+                      <span data-feather="play" class="icon"></span>
+                    </button>
+                  </div>
+                `;
+                
+                // Initialize feather icons
+                feather.replace({ class: 'icon', node: videoItem });
+                
+                // Add click listener to play video
+                videoItem.querySelector('.play-video').addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  chrome.tabs.update(tab.id, { url: video.url });
+                });
+                
+                youtubeContent.appendChild(videoItem);
+              });
+              
+              // Add event listener to toggle YouTube queue
+              tabElement.addEventListener('click', (e) => {
+                if (!e.target.closest('.tab-actions')) {
+                  youtubeItem.classList.toggle('expanded');
+                }
+              });
+              
+              youtubeItem.appendChild(youtubeContent);
+              domainContent.appendChild(youtubeItem);
+            } else {
+              domainContent.appendChild(tabElement);
+            }
+          });
+          
+          // Add event listener to toggle domain expansion
+          domainHeader.addEventListener('click', () => {
+            domainItem.classList.toggle('expanded');
+          });
+          
+          domainItem.appendChild(domainHeader);
+          domainItem.appendChild(domainContent);
+          windowContent.appendChild(domainItem);
+        } else {
+          // If there's only one tab in this domain, add it directly
+          domainTabs.forEach(tab => {
+            const tabElement = createTabElement(tab);
+            windowContent.appendChild(tabElement);
+          });
+        }
+      });
+      
+      // Add event listener to toggle window expansion
+      windowHeader.addEventListener('click', () => {
+        windowItem.classList.toggle('expanded');
+      });
+      
+      windowItem.appendChild(windowHeader);
+      windowItem.appendChild(windowContent);
+      treeView.appendChild(windowItem);
+    });
+    
+    // Initialize feather icons for the tree view
+    feather.replace({ class: 'icon', node: treeView });
   };
 
   // Render custom tab groups
