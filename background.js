@@ -95,11 +95,42 @@ function updateBadgeWithTabCount() {
 // Track tab events and handle YouTube queue persistence
 chrome.tabs.onCreated.addListener((tab) => {
   console.log('Tab created:', tab.id);
+  
+  // When a new tab is created, we need to track its parent relationship
+  // The openerTabId property tells us which tab opened this new tab
+  if (tab.openerTabId) {
+    // Store this parent-child relationship
+    chrome.storage.local.get(['tabRelationships'], (result) => {
+      let relationships = result.tabRelationships || {};
+      
+      // Create an entry for this child tab
+      relationships[tab.id] = {
+        parentTabId: tab.openerTabId,
+        createdAt: Date.now()
+      };
+      
+      chrome.storage.local.set({ tabRelationships });
+      
+      // Notify that tabs have updated with new relationship data
+      notifyTabsUpdated();
+    });
+  }
 });
 
 // Handle tab removal and YouTube queue preservation
 chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
   console.log('Tab removed:', tabId);
+  
+  // Clean up tab relationships when a tab is closed
+  chrome.storage.local.get(['tabRelationships'], (result) => {
+    let relationships = result.tabRelationships || {};
+    
+    // Remove the relationship entry for this tab
+    if (relationships[tabId]) {
+      delete relationships[tabId];
+      chrome.storage.local.set({ tabRelationships });
+    }
+  });
   
   // When a tab is removed, save its YouTube queue if it exists
   chrome.storage.local.get(['youtubeQueues'], (result) => {
