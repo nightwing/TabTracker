@@ -45,19 +45,57 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fetch all tabs
   const fetchTabs = async () => {
     try {
-      allTabs = await chrome.tabs.query({});
+      // Request tabs from background script
+      const response = await chrome.runtime.sendMessage({ action: 'getTabs' });
+      allTabs = response.tabs || [];
       
-      // Initialize filtered tabs
-      filteredTabs = [...allTabs];
-      
-      // Apply current filter
-      applyFilters();
-      
-      // Update UI
-      updateStats();
-      renderTabs();
+      // Get tab relationships from storage to build parent-child hierarchy
+      chrome.storage.local.get(['tabRelationships'], (result) => {
+        const relationships = result.tabRelationships || {};
+        
+        // Assign parent-child relationships to tabs
+        allTabs.forEach(tab => {
+          // Check if this tab has a parent
+          if (relationships[tab.id]) {
+            tab.parentTabId = relationships[tab.id].parentTabId;
+          }
+          
+          // Find all child tabs for this tab
+          tab.childTabs = [];
+          Object.keys(relationships).forEach(childTabId => {
+            if (relationships[childTabId].parentTabId === tab.id) {
+              // Find the child tab in allTabs
+              const childTab = allTabs.find(t => t.id === parseInt(childTabId));
+              if (childTab) {
+                tab.childTabs.push(childTab);
+              }
+            }
+          });
+        });
+        
+        // Initialize filtered tabs
+        filteredTabs = [...allTabs];
+        
+        // Apply current filter
+        applyFilters();
+        
+        // Update UI
+        updateStats();
+        renderTabs();
+      });
     } catch (error) {
       console.error('Error fetching tabs:', error);
+      
+      // Fallback to direct query if message fails
+      try {
+        allTabs = await chrome.tabs.query({});
+        filteredTabs = [...allTabs];
+        applyFilters();
+        updateStats();
+        renderTabs();
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+      }
     }
   };
 
@@ -180,7 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!windowGroups[tab.windowId]) {
         windowGroups[tab.windowId] = [];
       }
-      windowGroups[tab.windowId].push(tab);
+      
+      // Only add root tabs to the window groups initially
+      // A root tab is one without a parent or whose parent is not in the same window
+      const hasParentInSameWindow = tab.parentTabId && 
+        filteredTabs.some(t => t.id === tab.parentTabId && t.windowId === tab.windowId);
+      
+      if (!hasParentInSameWindow) {
+        windowGroups[tab.windowId].push(tab);
+      }
     });
     
     // Create tree items for each window
@@ -196,15 +242,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const windowHeader = document.createElement('div');
       windowHeader.className = 'tree-window';
       
+      // Count all tabs in this window (including child tabs)
+      const allWindowTabs = filteredTabs.filter(tab => tab.windowId.toString() === windowId.toString());
+      
       // Add tooltip with window info
-      const windowInfo = `Window ${windowId} - ${tabs.length} tab${tabs.length > 1 ? 's' : ''}`;
+      const windowInfo = `Window ${windowId} - ${allWindowTabs.length} tab${allWindowTabs.length > 1 ? 's' : ''}`;
       windowHeader.title = windowInfo;
       
       windowHeader.innerHTML = `
         <div class="window-title">
           <span data-feather="layout" class="icon"></span>
           <span>Window ${windowId}</span>
-          <span class="tree-item-count">${tabs.length}</span>
+          <span class="tree-item-count">${allWindowTabs.length}</span>
         </div>
       `;
       
