@@ -295,89 +295,132 @@ document.addEventListener('DOMContentLoaded', () => {
           
           // Add tabs to domain content
           domainTabs.forEach(tab => {
+            // Skip tabs that have parents in the same domain - they'll be displayed as children
+            const hasParentInSameDomain = tab.parentTabId && 
+              domainTabs.some(t => t.id === tab.parentTabId);
+              
+            if (!hasParentInSameDomain) {
+              // This is a root tab in this domain - render it with its children
+              renderTabWithChildren(tab, domainContent, domainTabs);
+            }
+          });
+          
+          // Helper function to recursively render a tab and its children
+          const renderTabWithChildren = (tab, container, availableTabs) => {
             const tabElement = createTabElement(tab);
             
             // Check if this is a YouTube tab with a queue
             const isYouTubeTab = domain.includes('youtube.com') && tab.url.includes('watch');
             const hasYouTubeQueue = tab.youtubeQueue && tab.youtubeQueue.length > 0;
             
-            // If it's a YouTube tab with a queue, make it expandable
-            if (hasYouTubeQueue) {
-              const youtubeItem = document.createElement('div');
-              youtubeItem.className = 'tree-item has-children youtube-playlist-item';
+            // Check if this tab has child tabs
+            const childTabs = tab.childTabs && tab.childTabs.length > 0
+              ? availableTabs.filter(t => tab.childTabs.includes(t.id))
+              : [];
+            
+            const hasChildren = childTabs.length > 0 || hasYouTubeQueue;
+            
+            if (hasChildren) {
+              // This tab has children or a YouTube queue - make it expandable
+              const treeItem = document.createElement('div');
+              treeItem.className = 'tree-item has-children';
+              if (hasYouTubeQueue) {
+                treeItem.classList.add('youtube-playlist-item');
+              }
               
-              // Add a playlist indicator to the tab element
-              const playlistIndicator = document.createElement('div');
-              playlistIndicator.className = 'playlist-indicator';
-              playlistIndicator.innerHTML = `
-                <span class="playlist-count">${tab.youtubeQueue.length} videos</span>
-                <span data-feather="list" class="icon"></span>
-              `;
-              tabElement.querySelector('.tab-info').appendChild(playlistIndicator);
-              
-              // Update the tooltip to show it's a playlist
-              tabElement.title = `${tab.title} - Playlist with ${tab.youtubeQueue.length} videos`;
-              
-              youtubeItem.appendChild(tabElement);
-              
-              // Create content container for YouTube queue
-              const youtubeContent = document.createElement('div');
-              youtubeContent.className = 'tree-content playlist-content';
-              
-              // Add YouTube queue items
-              tab.youtubeQueue.forEach((video, index) => {
-                const videoItem = document.createElement('div');
-                videoItem.className = 'video-item tab-item';
-                
-                // Add tooltip with video title and URL
-                videoItem.title = `${video.title || 'Unknown video'} - ${video.url}`;
-                
-                videoItem.innerHTML = `
-                  <div class="queue-item-index">${index + 1}</div>
-                  <div class="tab-info" title="${video.url}">
-                    <div class="tab-title" title="${video.title || 'Unknown video'}">${escapeHTML(video.title || 'Unknown video')}</div>
-                    <div class="tab-url">${escapeHTML(video.url)}</div>
-                  </div>
-                  <div class="tab-actions">
-                    <button class="tab-action-button play-video" title="Play video">
-                      <span data-feather="play" class="icon"></span>
-                    </button>
-                  </div>
+              // Add indicators to the tab element
+              if (hasYouTubeQueue) {
+                const playlistIndicator = document.createElement('div');
+                playlistIndicator.className = 'playlist-indicator';
+                playlistIndicator.innerHTML = `
+                  <span class="playlist-count">${tab.youtubeQueue.length} videos</span>
+                  <span data-feather="list" class="icon"></span>
                 `;
+                tabElement.querySelector('.tab-info').appendChild(playlistIndicator);
                 
-                // Initialize feather icons
-                feather.replace({ class: 'icon', node: videoItem });
-                
-                // Add click listener to play video
-                videoItem.querySelector('.play-video').addEventListener('click', (e) => {
-                  e.stopPropagation();
-                  chrome.tabs.update(tab.id, { url: video.url });
-                });
-                
-                youtubeContent.appendChild(videoItem);
-              });
+                // Update the tooltip to show it's a playlist
+                tabElement.title = `${tab.title} - Playlist with ${tab.youtubeQueue.length} videos`;
+              }
               
-              // Add event listener to toggle YouTube queue
+              treeItem.appendChild(tabElement);
+              
+              // Create content container for children
+              const treeContent = document.createElement('div');
+              treeContent.className = 'tree-content';
+              if (hasYouTubeQueue) {
+                treeContent.classList.add('playlist-content');
+              }
+              
+              // Add YouTube queue items if applicable
+              if (hasYouTubeQueue) {
+                tab.youtubeQueue.forEach((video, index) => {
+                  const videoItem = document.createElement('div');
+                  videoItem.className = 'video-item tab-item';
+                  
+                  // Add tooltip with video title and URL
+                  videoItem.title = `${video.title || 'Unknown video'} - ${video.url}`;
+                  
+                  videoItem.innerHTML = `
+                    <div class="queue-item-index">${index + 1}</div>
+                    <div class="tab-info" title="${video.url}">
+                      <div class="tab-title" title="${video.title || 'Unknown video'}">${escapeHTML(video.title || 'Unknown video')}</div>
+                      <div class="tab-url">${escapeHTML(video.url)}</div>
+                    </div>
+                    <div class="tab-actions">
+                      <button class="tab-action-button play-video" title="Play video">
+                        <span data-feather="play" class="icon"></span>
+                      </button>
+                    </div>
+                  `;
+                  
+                  // Initialize feather icons
+                  feather.replace({ class: 'icon', node: videoItem });
+                  
+                  // Add click listener to play video
+                  videoItem.querySelector('.play-video').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    chrome.tabs.update(tab.id, { url: video.url });
+                  });
+                  
+                  treeContent.appendChild(videoItem);
+                });
+              }
+              
+              // Add child tabs if any
+              if (childTabs.length > 0) {
+                // Create a child tabs section if there are child tabs
+                childTabs.forEach(childTab => {
+                  // Recursively render child tabs and their children
+                  renderTabWithChildren(childTab, treeContent, availableTabs);
+                });
+              }
+              
+              // Add event listener to toggle expansion
               tabElement.addEventListener('click', (e) => {
                 if (!e.target.closest('.tab-actions')) {
-                  youtubeItem.classList.toggle('expanded');
+                  treeItem.classList.toggle('expanded');
                   // Save expansion state
-                  expandedGroups[`youtube-${tab.id}`] = youtubeItem.classList.contains('expanded');
+                  expandedGroups[`tab-${tab.id}`] = treeItem.classList.contains('expanded');
                   saveExpandedState();
                 }
               });
               
               // Apply saved expansion state or default to expanded
-              if (expandedGroups.allExpanded || expandedGroups[`youtube-${tab.id}`] !== false) {
-                youtubeItem.classList.add('expanded');
+              const shouldExpand = expandedGroups.allExpanded || 
+                expandedGroups[`tab-${tab.id}`] !== false ||
+                expandedGroups[`youtube-${tab.id}`] !== false;
+                
+              if (shouldExpand) {
+                treeItem.classList.add('expanded');
               }
               
-              youtubeItem.appendChild(youtubeContent);
-              domainContent.appendChild(youtubeItem);
+              treeItem.appendChild(treeContent);
+              container.appendChild(treeItem);
             } else {
-              domainContent.appendChild(tabElement);
+              // This tab has no children - add it directly
+              container.appendChild(tabElement);
             }
-          });
+          };
           
           // Add event listener to toggle domain expansion
           domainHeader.addEventListener('click', () => {
@@ -703,8 +746,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabElement = document.createElement('div');
     tabElement.className = 'tab-item fade-in';
     
-    // Add tooltip with the URL
-    tabElement.title = tab.url;
+    // Mark tabs with child tabs
+    if (tab.childTabs && tab.childTabs.length > 0) {
+      tabElement.classList.add('has-children');
+    }
+    
+    // Mark tabs that are children of other tabs
+    if (tab.parentTabId) {
+      tabElement.classList.add('child-tab');
+      tabElement.dataset.parentTabId = tab.parentTabId;
+    }
+    
+    // Store tab ID for reference
+    tabElement.dataset.tabId = tab.id;
+    
+    // Add tooltip with the URL and parent-child relationship info
+    let tooltipText = tab.url;
+    if (tab.parentTabId) {
+      tooltipText = `Child tab (opened from tab #${tab.parentTabId})\n${tab.url}`;
+    }
+    if (tab.childTabs && tab.childTabs.length > 0) {
+      tooltipText = `Parent tab with ${tab.childTabs.length} child tab(s)\n${tab.url}`;
+    }
+    tabElement.title = tooltipText;
     
     const domain = extractDomain(tab.url);
     const faviconUrl = tab.favIconUrl || `https://www.google.com/s2/favicons?domain=${domain}`;
@@ -713,8 +777,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const isYouTubeTab = domain.includes('youtube.com') && tab.url.includes('watch');
     const hasYouTubeQueue = tab.youtubeQueue && tab.youtubeQueue.length > 0;
     
-    // Create the tab element HTML
-    let tabHTML = `
+    // Create the tab element HTML with parent-child indicators
+    let tabHTML = '';
+    
+    // Add parent indicator if this tab has children
+    if (tab.childTabs && tab.childTabs.length > 0) {
+      tabHTML += `
+        <div class="parent-indicator">
+          <span data-feather="corner-right-down" class="icon parent-icon"></span>
+          <span class="child-count">${tab.childTabs.length}</span>
+        </div>
+      `;
+    }
+    
+    // Add child indicator if this tab is a child
+    if (tab.parentTabId) {
+      tabHTML += `
+        <div class="child-indicator">
+          <span data-feather="corner-up-left" class="icon child-icon"></span>
+        </div>
+      `;
+    }
+    
+    // Add main tab content
+    tabHTML += `
       <img class="tab-favicon" src="${faviconUrl}" alt="">
       <div class="tab-info" title="${tab.url}">
         <div class="tab-title" title="${tab.title}">${escapeHTML(tab.title)}</div>
@@ -730,6 +816,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>videos in playlist</span>
             ${tab.hasRestoredQueue ? '<span class="queue-restored">(restored)</span>' : ''}
           </button>
+        </div>
+      `;
+    }
+    
+    // Add child tabs count if this tab has children
+    if (tab.childTabs && tab.childTabs.length > 0) {
+      tabHTML += `
+        <div class="child-tabs-info">
+          <span class="child-tabs-count">${tab.childTabs.length} child tab${tab.childTabs.length > 1 ? 's' : ''}</span>
         </div>
       `;
     }

@@ -361,6 +361,102 @@ html, body {
   padding: 4px 10px;
 }
 
+/* Parent-child tab relationship styles */
+.child-tab {
+  padding-left: 20px;
+  border-left: 2px dashed rgba(0, 0, 0, 0.1);
+  margin-left: 10px;
+}
+
+.parent-indicator {
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 100, 200, 0.1);
+  border-radius: 50%;
+  padding: 3px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.child-indicator {
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 150, 100, 0.1);
+  border-radius: 50%;
+  padding: 2px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parent-icon {
+  color: rgba(0, 100, 200, 0.8);
+  width: 16px;
+  height: 16px;
+}
+
+.child-icon {
+  color: rgba(0, 150, 100, 0.8);
+  width: 14px;
+  height: 14px;
+}
+
+.child-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: rgba(0, 100, 200, 0.8);
+  color: white;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.child-tabs-info {
+  font-size: 11px;
+  color: rgba(0, 100, 200, 0.8);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+}
+
+/* Tab tree connection lines */
+.tree-content .tab-item:not(:last-child):before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 24px;
+  bottom: 0;
+  width: 2px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Highlight parent-child connections on hover */
+.tab-item[data-tab-id]:hover {
+  background-color: rgba(0, 100, 200, 0.05);
+}
+
+.tab-item[data-tab-id]:hover ~ .tab-item[data-parent-tab-id] {
+  background-color: rgba(0, 150, 100, 0.05);
+}
+
+.tab-item[data-parent-tab-id]:hover ~ .tab-item[data-tab-id] {
+  background-color: rgba(0, 100, 200, 0.05);
+}
+
 .tree-window {
   display: flex;
   align-items: center;
