@@ -58,10 +58,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 // Function to notify all tab manager windows that tabs have been updated
 function notifyTabsUpdated() {
-  // Send message to tab manager windows
-  chrome.runtime.sendMessage({
-    action: 'tabsUpdated'
-  });
+  try {
+    // Send message to tab manager windows, catching the error if no receivers exist
+    chrome.runtime.sendMessage({
+      action: 'tabsUpdated'
+    }).catch(error => {
+      // It's normal for this error to occur when no tab manager windows are open
+      // "Receiving end does not exist" is expected and can be safely ignored
+      console.debug('No listeners for tabsUpdated message, this is normal:', error.message);
+    });
+  } catch (error) {
+    // Additional catch for legacy Chrome versions
+    console.debug('Error sending message, this is normal if no tab manager is open');
+  }
   
   // Update badge with tab count
   updateBadgeWithTabCount();
@@ -180,13 +189,22 @@ function extractYouTubeQueueFromUrl(url) {
 
 // Extract video queue information from YouTube tabs
 async function extractYouTubeQueueInfo(tab) {
-  if (!isYouTubeWatchUrl(tab.url)) return null;
+  if (!tab || !tab.url || !isYouTubeWatchUrl(tab.url)) return null;
   
   // Get queue parameters from URL
   const queueInfo = extractYouTubeQueueFromUrl(tab.url);
   if (!queueInfo) return null;
   
   try {
+    // Verify that tab still exists and is accessible before executing script
+    // This avoids "Error: No tab with id X" errors
+    const tabs = await chrome.tabs.query({});
+    const tabExists = tabs.some(t => t.id === tab.id);
+    if (!tabExists) {
+      console.debug(`Tab ${tab.id} no longer exists, skipping queue extraction`);
+      return null;
+    }
+    
     // Execute content script to extract queue information from the page
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
@@ -194,34 +212,38 @@ async function extractYouTubeQueueInfo(tab) {
         // This function runs in the context of the YouTube page
         const videos = [];
         
-        // Try to find playlist items
-        const items = document.querySelectorAll('ytd-playlist-panel-video-renderer');
-        if (items && items.length > 0) {
-          items.forEach(item => {
-            // Extract data from playlist panel items
-            const titleEl = item.querySelector('#video-title');
-            const linkEl = item.querySelector('a#wc-endpoint');
-            
-            if (titleEl && linkEl) {
-              const title = titleEl.textContent.trim();
-              const url = linkEl.href;
+        try {
+          // Try to find playlist items
+          const items = document.querySelectorAll('ytd-playlist-panel-video-renderer');
+          if (items && items.length > 0) {
+            items.forEach(item => {
+              // Extract data from playlist panel items
+              const titleEl = item.querySelector('#video-title');
+              const linkEl = item.querySelector('a#wc-endpoint');
               
-              // Extract video ID from URL
-              let videoId = null;
-              const match = url.match(/[?&]v=([^&]+)/);
-              if (match && match[1]) {
-                videoId = match[1];
+              if (titleEl && linkEl) {
+                const title = titleEl.textContent.trim();
+                const url = linkEl.href;
+                
+                // Extract video ID from URL
+                let videoId = null;
+                const match = url.match(/[?&]v=([^&]+)/);
+                if (match && match[1]) {
+                  videoId = match[1];
+                }
+                
+                if (videoId) {
+                  videos.push({
+                    videoId,
+                    title,
+                    url
+                  });
+                }
               }
-              
-              if (videoId) {
-                videos.push({
-                  videoId,
-                  title,
-                  url
-                });
-              }
-            }
-          });
+            });
+          }
+        } catch (innerError) {
+          console.warn('Error while extracting video elements from page:', innerError);
         }
         
         return videos;
@@ -241,7 +263,11 @@ async function extractYouTubeQueueInfo(tab) {
       };
     }
   } catch (error) {
-    console.error('Error executing script in YouTube tab:', error);
+    // Common errors:
+    // - "Cannot access contents of url "chrome://..." - restricted URL
+    // - "No tab with id X" - tab was closed
+    // - "Receiving end does not exist" - tab was navigated away
+    console.debug('Could not extract YouTube queue info:', error.message);
   }
   
   return null;
@@ -272,6 +298,9 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             chrome.storage.local.set({ youtubeQueues });
           });
         }
+      }).catch(error => {
+        // This can happen if the tab was closed or navigated away before the script completed
+        console.debug('Error extracting YouTube queue info, tab may have changed:', error.message);
       });
     }
   }
@@ -280,32 +309,51 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getTabs') {
-    chrome.tabs.query({}, (tabs) => {
-      // Fetch YouTube queue data to include with tabs
-      chrome.storage.local.get(['youtubeQueues'], (result) => {
-        const youtubeQueues = result.youtubeQueues || {};
-        
-        // Attach queue information to tab data
-        tabs.forEach(tab => {
-          if (isYouTubeWatchUrl(tab.url)) {
-            // First check if we have queue data for this specific tab
-            if (youtubeQueues[`tab-${tab.id}`]) {
-              tab.youtubeQueue = youtubeQueues[`tab-${tab.id}`].videos;
+    try {
+      chrome.tabs.query({}, (tabs) => {
+        try {
+          // Fetch YouTube queue data to include with tabs
+          chrome.storage.local.get(['youtubeQueues'], (result) => {
+            try {
+              const youtubeQueues = result.youtubeQueues || {};
+              
+              // Attach queue information to tab data
+              tabs.forEach(tab => {
+                try {
+                  if (tab && tab.url && isYouTubeWatchUrl(tab.url)) {
+                    // First check if we have queue data for this specific tab
+                    if (youtubeQueues[`tab-${tab.id}`]) {
+                      tab.youtubeQueue = youtubeQueues[`tab-${tab.id}`].videos;
+                    }
+                    // Otherwise, check if we have saved queue data for this URL
+                    else {
+                      const queueInfo = extractYouTubeQueueFromUrl(tab.url);
+                      if (queueInfo && queueInfo.baseUrl && youtubeQueues[queueInfo.baseUrl]) {
+                        tab.youtubeQueue = youtubeQueues[queueInfo.baseUrl].videos;
+                        tab.hasRestoredQueue = true;
+                      }
+                    }
+                  }
+                } catch (tabError) {
+                  console.debug('Error processing tab data:', tabError.message);
+                }
+              });
+              
+              sendResponse({ tabs });
+            } catch (storageError) {
+              console.debug('Error processing storage data:', storageError.message);
+              sendResponse({ tabs: tabs || [] });
             }
-            // Otherwise, check if we have saved queue data for this URL
-            else {
-              const queueInfo = extractYouTubeQueueFromUrl(tab.url);
-              if (queueInfo && queueInfo.baseUrl && youtubeQueues[queueInfo.baseUrl]) {
-                tab.youtubeQueue = youtubeQueues[queueInfo.baseUrl].videos;
-                tab.hasRestoredQueue = true;
-              }
-            }
-          }
-        });
-        
-        sendResponse({ tabs });
+          });
+        } catch (queryError) {
+          console.debug('Error querying tabs:', queryError.message);
+          sendResponse({ tabs: [] });
+        }
       });
-    });
+    } catch (globalError) {
+      console.debug('Critical error in getTabs handler:', globalError.message);
+      sendResponse({ tabs: [], error: globalError.message });
+    }
     return true; // Required for async sendResponse
   }
   
@@ -314,9 +362,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const { tabId, url } = request;
     
     if (tabId && url) {
-      chrome.tabs.update(tabId, { url }, () => {
-        sendResponse({ success: true });
-      });
+      try {
+        chrome.tabs.update(tabId, { url }, () => {
+          if (chrome.runtime.lastError) {
+            sendResponse({ 
+              success: false, 
+              error: chrome.runtime.lastError.message 
+            });
+            return;
+          }
+          sendResponse({ success: true });
+        });
+      } catch (error) {
+        sendResponse({ 
+          success: false, 
+          error: error.message || 'Failed to update tab' 
+        });
+      }
     } else {
       sendResponse({ success: false, error: 'Invalid parameters' });
     }
@@ -328,29 +390,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // This can be used for extended functionality later
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
   chrome.tabs.get(tabId, (tab) => {
-    if (chrome.runtime.lastError || !tab.url.startsWith('http')) {
+    // Handle case where tab doesn't exist or there was an error
+    if (chrome.runtime.lastError) {
+      console.debug('Cannot access tab, it may have been closed:', chrome.runtime.lastError.message);
       return;
     }
     
-    const timestamp = Date.now();
-    const tabData = {
-      id: tab.id,
-      windowId: tab.windowId,
-      url: tab.url,
-      title: tab.title,
-      timestamp
-    };
+    // Skip non-http tabs and invalid URLs
+    if (!tab || !tab.url || !tab.url.startsWith('http')) {
+      return;
+    }
     
-    chrome.storage.local.get(['tabHistory'], (result) => {
-      let tabHistory = result.tabHistory || [];
+    try {
+      const timestamp = Date.now();
+      const tabData = {
+        id: tab.id,
+        windowId: tab.windowId,
+        url: tab.url,
+        title: tab.title,
+        timestamp
+      };
       
-      // Keep only the latest 100 entries to avoid storage limits
-      tabHistory.unshift(tabData);
-      if (tabHistory.length > 100) {
-        tabHistory = tabHistory.slice(0, 100);
-      }
-      
-      chrome.storage.local.set({ tabHistory });
-    });
+      chrome.storage.local.get(['tabHistory'], (result) => {
+        let tabHistory = result.tabHistory || [];
+        
+        // Keep only the latest 100 entries to avoid storage limits
+        tabHistory.unshift(tabData);
+        if (tabHistory.length > 100) {
+          tabHistory = tabHistory.slice(0, 100);
+        }
+        
+        chrome.storage.local.set({ tabHistory });
+      });
+    } catch (error) {
+      console.debug('Error storing tab history:', error.message);
+    }
   });
 });
