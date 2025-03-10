@@ -3,12 +3,41 @@
 
 // Handle clicks on the browser action icon
 chrome.action.onClicked.addListener(() => {
-  // Open the tab manager in a new window
-  chrome.windows.create({
-    url: chrome.runtime.getURL('tab-manager.html'),
-    type: 'popup',
-    width: 450,
-    height: 700
+  // Check if tab manager window is already open
+  chrome.windows.getAll({ populate: true }, (windows) => {
+    let tabManagerFound = false;
+    const tabManagerUrl = chrome.runtime.getURL('tab-manager.html');
+    
+    // Look for an existing tab manager window
+    for (const window of windows) {
+      for (const tab of window.tabs) {
+        if (tab.url === tabManagerUrl) {
+          // Found an existing tab manager window, focus it
+          tabManagerFound = true;
+          chrome.windows.update(window.id, { focused: true });
+          chrome.tabs.update(tab.id, { active: true });
+          break;
+        }
+      }
+      if (tabManagerFound) break;
+    }
+    
+    // If no existing tab manager window, create a new one
+    if (!tabManagerFound) {
+      // Get screen information to set window height to 100% of available height
+      chrome.system.display.getInfo((displays) => {
+        // Use the primary display's height
+        const primaryDisplay = displays.find(d => d.isPrimary) || displays[0];
+        const availableHeight = primaryDisplay ? primaryDisplay.workArea.height : 900;
+        
+        chrome.windows.create({
+          url: tabManagerUrl,
+          type: 'popup',
+          width: 450,
+          height: availableHeight
+        });
+      });
+    }
   });
 });
 
@@ -38,21 +67,19 @@ function notifyTabsUpdated() {
   updateBadgeWithTabCount();
 }
 
-// Function to update the extension badge with the current tab count
+// Function to update the extension badge with the total tab count
 function updateBadgeWithTabCount() {
   chrome.tabs.query({}, (tabs) => {
     const totalTabs = tabs.length;
     
-    // Get current window to count tabs in current window
-    chrome.windows.getCurrent((currentWindow) => {
-      const tabsInCurrentWindow = tabs.filter(tab => tab.windowId === currentWindow.id).length;
-      
-      // Set the badge text to show current window tab count
-      chrome.action.setBadgeText({ text: tabsInCurrentWindow.toString() });
-      
-      // Set badge background color
-      chrome.action.setBadgeBackgroundColor({ color: '#4285F4' });
-    });
+    // Set the badge text to show total tab count across all windows
+    chrome.action.setBadgeText({ text: totalTabs.toString() });
+    
+    // Set badge text color to white for better visibility and contrast
+    chrome.action.setBadgeTextColor({ color: '#FFFFFF' });
+    
+    // Set badge background color
+    chrome.action.setBadgeBackgroundColor({ color: '#4285F4' });
   });
 }
 

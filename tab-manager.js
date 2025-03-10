@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSort = 'recent';
   let currentGrouping = 'tree'; // Set tree view as default
   let customGroups = [];
+  let expandedGroups = {}; // Store the expanded/collapsed state of groups
   let searchQuery = '';
   let currentWindowTabCount = 0;
   let currentWindowId = null;
@@ -374,6 +375,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const groupHeader = document.createElement('div');
       groupHeader.className = 'tab-group-header';
       
+      // Add tooltip with group info
+      const groupInfo = `${escapeHTML(group.name)} - ${groupTabs.length} tab${groupTabs.length > 1 ? 's' : ''}`;
+      groupHeader.title = groupInfo;
+      
       groupHeader.innerHTML = `
         <div class="tab-group-title">
           <span class="color-badge ${group.color}"></span>
@@ -440,6 +445,10 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const ungroupedHeader = document.createElement('div');
       ungroupedHeader.className = 'tab-group-header';
+      
+      // Add tooltip with ungrouped tabs info
+      const ungroupedInfo = `Ungrouped Tabs - ${remainingTabs.length} tab${remainingTabs.length > 1 ? 's' : ''}`;
+      ungroupedHeader.title = ungroupedInfo;
       
       ungroupedHeader.innerHTML = `
         <div class="tab-group-title">
@@ -549,6 +558,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabs = domainGroups[domain];
       const domainGroup = document.createElement('div');
       domainGroup.className = 'domain-group';
+      
+      // Add tooltip with domain info
+      const domainInfo = `${domain} - ${tabs.length} tab${tabs.length > 1 ? 's' : ''}`;
+      domainGroup.title = domainInfo;
       
       // Use local favicon storage if available, otherwise default to domain
       domainGroup.innerHTML = `
