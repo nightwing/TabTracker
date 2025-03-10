@@ -255,13 +255,25 @@ document.addEventListener('DOMContentLoaded', () => {
             // If it's a YouTube tab with a queue, make it expandable
             if (hasYouTubeQueue) {
               const youtubeItem = document.createElement('div');
-              youtubeItem.className = 'tree-item has-children';
+              youtubeItem.className = 'tree-item has-children youtube-playlist-item';
+              
+              // Add a playlist indicator to the tab element
+              const playlistIndicator = document.createElement('div');
+              playlistIndicator.className = 'playlist-indicator';
+              playlistIndicator.innerHTML = `
+                <span class="playlist-count">${tab.youtubeQueue.length} videos</span>
+                <span data-feather="list" class="icon"></span>
+              `;
+              tabElement.querySelector('.tab-info').appendChild(playlistIndicator);
+              
+              // Update the tooltip to show it's a playlist
+              tabElement.title = `${tab.title} - Playlist with ${tab.youtubeQueue.length} videos`;
               
               youtubeItem.appendChild(tabElement);
               
               // Create content container for YouTube queue
               const youtubeContent = document.createElement('div');
-              youtubeContent.className = 'tree-content';
+              youtubeContent.className = 'tree-content playlist-content';
               
               // Add YouTube queue items
               tab.youtubeQueue.forEach((video, index) => {
@@ -300,8 +312,16 @@ document.addEventListener('DOMContentLoaded', () => {
               tabElement.addEventListener('click', (e) => {
                 if (!e.target.closest('.tab-actions')) {
                   youtubeItem.classList.toggle('expanded');
+                  // Save expansion state
+                  expandedGroups[`youtube-${tab.id}`] = youtubeItem.classList.contains('expanded');
+                  saveExpandedState();
                 }
               });
+              
+              // Apply saved expansion state or default to expanded
+              if (expandedGroups.allExpanded || expandedGroups[`youtube-${tab.id}`] !== false) {
+                youtubeItem.classList.add('expanded');
+              }
               
               youtubeItem.appendChild(youtubeContent);
               domainContent.appendChild(youtubeItem);
@@ -313,7 +333,15 @@ document.addEventListener('DOMContentLoaded', () => {
           // Add event listener to toggle domain expansion
           domainHeader.addEventListener('click', () => {
             domainItem.classList.toggle('expanded');
+            // Save expansion state
+            expandedGroups[`domain-${domain}-${windowId}`] = domainItem.classList.contains('expanded');
+            saveExpandedState();
           });
+          
+          // Apply saved expansion state or default to expanded
+          if (expandedGroups.allExpanded || expandedGroups[`domain-${domain}-${windowId}`] !== false) {
+            domainItem.classList.add('expanded');
+          }
           
           domainItem.appendChild(domainHeader);
           domainItem.appendChild(domainContent);
@@ -330,7 +358,15 @@ document.addEventListener('DOMContentLoaded', () => {
       // Add event listener to toggle window expansion
       windowHeader.addEventListener('click', () => {
         windowItem.classList.toggle('expanded');
+        // Save expansion state
+        expandedGroups[`window-${windowId}`] = windowItem.classList.contains('expanded');
+        saveExpandedState();
       });
+      
+      // Apply saved expansion state or default to expanded
+      if (expandedGroups.allExpanded || expandedGroups[`window-${windowId}`] !== false) {
+        windowItem.classList.add('expanded');
+      }
       
       windowItem.appendChild(windowHeader);
       windowItem.appendChild(windowContent);
@@ -410,8 +446,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!e.target.closest('.tab-group-actions')) {
           // Toggle group expansion
           groupContent.classList.toggle('expanded');
+          // Save expansion state
+          expandedGroups[`custom-${group.id}`] = groupContent.classList.contains('expanded');
+          saveExpandedState();
         }
       });
+      
+      // Apply saved expansion state or default to expanded
+      if (expandedGroups.allExpanded || expandedGroups[`custom-${group.id}`] !== false) {
+        groupContent.classList.add('expanded');
+      }
       
       // Add edit and delete button listeners
       const editButton = groupHeader.querySelector('.edit-group');
@@ -470,7 +514,15 @@ document.addEventListener('DOMContentLoaded', () => {
       ungroupedHeader.addEventListener('click', () => {
         // Toggle group expansion
         ungroupedContent.classList.toggle('expanded');
+        // Save expansion state
+        expandedGroups['ungrouped'] = ungroupedContent.classList.contains('expanded');
+        saveExpandedState();
       });
+      
+      // Apply saved expansion state or default to expanded
+      if (expandedGroups.allExpanded || expandedGroups['ungrouped'] !== false) {
+        ungroupedContent.classList.add('expanded');
+      }
       
       // Assemble the ungrouped section
       ungroupedElement.appendChild(ungroupedHeader);
@@ -534,7 +586,15 @@ document.addEventListener('DOMContentLoaded', () => {
       groupHeader.addEventListener('click', () => {
         // Toggle group expansion
         groupContent.classList.toggle('expanded');
+        // Save expansion state
+        expandedGroups[`window-group-${windowId}`] = groupContent.classList.contains('expanded');
+        saveExpandedState();
       });
+      
+      // Apply saved expansion state or default to expanded
+      if (expandedGroups.allExpanded || expandedGroups[`window-group-${windowId}`] !== false) {
+        groupContent.classList.add('expanded');
+      }
       
       // Assemble the group
       groupElement.appendChild(groupHeader);
@@ -616,8 +676,9 @@ document.addEventListener('DOMContentLoaded', () => {
       tabHTML += `
         <div class="youtube-queue-info">
           <button class="youtube-queue-toggle">
-            <span data-feather="eye" class="icon"></span>
-            <span>${tab.youtubeQueue.length} videos in queue</span>
+            <span data-feather="list" class="icon"></span>
+            <span class="playlist-count">${tab.youtubeQueue.length}</span>
+            <span>videos in playlist</span>
             ${tab.hasRestoredQueue ? '<span class="queue-restored">(restored)</span>' : ''}
           </button>
         </div>
@@ -1068,6 +1129,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   };
+  
+  // Save expanded group state to chrome.storage
+  const saveExpandedState = () => {
+    chrome.storage.local.set({ expandedGroups }, () => {
+      console.log('Expanded groups state saved');
+    });
+  };
+  
+  // Load expanded group state from chrome.storage
+  const loadExpandedState = () => {
+    chrome.storage.local.get('expandedGroups', (data) => {
+      if (data.expandedGroups) {
+        expandedGroups = data.expandedGroups;
+        console.log('Expanded groups state loaded');
+      } else {
+        // Default to all groups expanded
+        expandedGroups = { allExpanded: true };
+      }
+    });
+  };
 
   // Event listener for group button
   groupButton.addEventListener('click', (e) => {
@@ -1143,5 +1224,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial load
   loadCustomGroups();
+  loadExpandedState();
   fetchTabs();
 });
