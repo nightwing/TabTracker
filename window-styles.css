@@ -362,7 +362,10 @@ html, body {
 
 .tree-item .tree-content {
   display: none;
-  margin-left: 0;
+  margin-left: 20px;
+  border-left: 1px solid rgba(150, 150, 150, 0.2);
+  padding-left: 10px;
+  position: relative;
 }
 
 .tree-item .tab-item {
@@ -370,12 +373,21 @@ html, body {
   padding: 4px 8px;
   border-radius: 0;
   background-color: transparent;
+  color: #a1a1a1;
+}
+
+.tree-item .tab-item:hover {
+  background-color: rgba(70, 70, 70, 0.2);
+}
+
+.tree-item .tab-item .tab-title {
+  color: #e1e1e1;
 }
 
 /* Parent-child tab relationship styles */
 .child-tab {
   padding-left: 20px;
-  border-left: 2px dashed rgba(0, 0, 0, 0.1);
+  border-left: 2px dashed rgba(150, 150, 150, 0.2);
   margin-left: 10px;
 }
 
@@ -438,7 +450,7 @@ html, body {
 
 .child-tabs-info {
   font-size: 11px;
-  color: rgba(0, 100, 200, 0.8);
+  color: rgba(100, 150, 255, 0.8);
   margin-top: 3px;
   display: flex;
   align-items: center;
@@ -452,7 +464,7 @@ html, body {
   top: 24px;
   bottom: 0;
   width: 2px;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(150, 150, 150, 0.2);
 }
 
 /* Highlight parent-child connections on hover */
@@ -615,4 +627,28 @@ html, body {
   font-style: italic;
   color: #666;
   margin-left: 5px;
+}
+
+/* Site-specific icons */
+.site-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  flex-shrink: 0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stackoverflow-icon {
+  color: #f48024;
+}
+
+.github-icon {
+  color: #6e5494;
+}
+
+.google-icon {
+  color: #4285F4;
 }

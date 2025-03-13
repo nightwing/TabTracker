@@ -1053,13 +1053,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Use site-specific icons for some special domains
     let iconHtml = '';
     if (isStackOverflow) {
-      iconHtml = `<span class="site-icon stackoverflow-icon">📖</span>`;
+      iconHtml = `<span data-feather="help-circle" class="icon site-icon stackoverflow-icon"></span>`;
     } else if (isGithub) {
-      iconHtml = `<span class="site-icon github-icon">📖</span>`;
+      iconHtml = `<span data-feather="github" class="icon site-icon github-icon"></span>`;
     } else if (isGoogle) {
-      iconHtml = `<span data-feather="search" class="icon"></span>`;
+      iconHtml = `<span data-feather="search" class="icon site-icon google-icon"></span>`;
     } else if (isChrome) {
-      iconHtml = `<span data-feather="chrome" class="icon"></span>`;
+      iconHtml = `<span data-feather="settings" class="icon site-icon"></span>`;
     } else {
       iconHtml = `<img class="tab-favicon" src="${faviconUrl}" alt="">`;
     }
