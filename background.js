@@ -503,3 +503,310 @@ chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
     }
   });
 });
+
+// ---------- Inactive Windows Management ----------
+
+/**
+ * Stores information about a window that is being deactivated
+ * This includes all tabs, their URLs, titles, and relationships
+ * 
+ * @param {number} windowId - The ID of the window being deactivated
+ * @returns {Promise<boolean>} - Promise resolving to true if successful
+ */
+async function deactivateWindow(windowId) {
+  try {
+    console.log('Deactivating window:', windowId);
+    
+    // Get all tabs in the window
+    const tabs = await chrome.tabs.query({ windowId });
+    
+    if (!tabs || tabs.length === 0) {
+      console.warn('No tabs found in window to deactivate');
+      return false;
+    }
+    
+    // Get tab relationships to preserve parent-child connections
+    const { tabRelationships } = await chrome.storage.local.get(['tabRelationships']);
+    const relationships = tabRelationships || {};
+    
+    // Create window data object
+    const windowData = {
+      id: windowId,
+      deactivatedAt: Date.now(),
+      name: `Window ${windowId}`, // Default name, can be customized by user
+      tabs: tabs.map(tab => ({
+        url: tab.url,
+        title: tab.title,
+        favIconUrl: tab.favIconUrl,
+        pinned: tab.pinned,
+        index: tab.index,
+        groupId: tab.groupId,
+        originalId: tab.id,
+        // Get parent relationship if it exists
+        parentTabId: relationships[tab.id] ? relationships[tab.id].parentTabId : undefined
+      }))
+    };
+    
+    // Store window data in inactive windows list
+    const { inactiveWindows } = await chrome.storage.local.get(['inactiveWindows']);
+    const allInactiveWindows = inactiveWindows || [];
+    
+    // Add to the beginning of the list (most recent first)
+    allInactiveWindows.unshift(windowData);
+    
+    // Save updated inactive windows list
+    await chrome.storage.local.set({ inactiveWindows: allInactiveWindows });
+    
+    // Close the window now that we've stored its data
+    await chrome.windows.remove(windowId);
+    
+    console.log('Window deactivated successfully:', windowId);
+    return true;
+  } catch (error) {
+    console.error('Error deactivating window:', error);
+    return false;
+  }
+}
+
+/**
+ * Reactivates a previously deactivated window
+ * Creates a new browser window with all the tabs from the saved window
+ * 
+ * @param {number} inactiveWindowIndex - The index of the inactive window in the array
+ * @returns {Promise<boolean>} - Promise resolving to true if successful
+ */
+async function reactivateWindow(inactiveWindowIndex) {
+  try {
+    console.log('Reactivating window at index:', inactiveWindowIndex);
+    
+    // Get inactive window data
+    const { inactiveWindows } = await chrome.storage.local.get(['inactiveWindows']);
+    
+    if (!inactiveWindows || !inactiveWindows[inactiveWindowIndex]) {
+      console.warn('Inactive window not found at index:', inactiveWindowIndex);
+      return false;
+    }
+    
+    const windowData = inactiveWindows[inactiveWindowIndex];
+    
+    // Create a new window with the first tab
+    const firstTab = windowData.tabs[0] || { url: 'about:blank' };
+    const newWindow = await chrome.windows.create({
+      url: firstTab.url,
+      focused: true
+    });
+    
+    if (!newWindow || !newWindow.id) {
+      console.error('Failed to create new window');
+      return false;
+    }
+    
+    // Find the tab that was created with the window
+    const initialTabs = await chrome.tabs.query({ windowId: newWindow.id });
+    const initialTabId = initialTabs[0]?.id;
+    
+    // Create mapping of original to new tab IDs for preserving relationships
+    const tabIdMapping = {};
+    
+    // Add rest of the tabs
+    if (windowData.tabs.length > 1) {
+      for (let i = 1; i < windowData.tabs.length; i++) {
+        const tabData = windowData.tabs[i];
+        const newTab = await chrome.tabs.create({
+          windowId: newWindow.id,
+          url: tabData.url,
+          pinned: tabData.pinned,
+          index: tabData.index,
+          active: false
+        });
+        
+        // Store mapping of original ID to new ID
+        if (tabData.originalId && newTab.id) {
+          tabIdMapping[tabData.originalId] = newTab.id;
+        }
+      }
+    }
+    
+    // If we created tabs for all entries except the first one,
+    // update the first tab too
+    if (initialTabId && firstTab.originalId) {
+      // Pin the tab if it was pinned
+      if (firstTab.pinned) {
+        await chrome.tabs.update(initialTabId, { pinned: true });
+      }
+      
+      // Store mapping for the first tab
+      tabIdMapping[firstTab.originalId] = initialTabId;
+    }
+    
+    // Restore parent-child relationships
+    await restoreTabRelationships(windowData.tabs, tabIdMapping);
+    
+    // Remove the reactivated window from the inactive list
+    inactiveWindows.splice(inactiveWindowIndex, 1);
+    await chrome.storage.local.set({ inactiveWindows: inactiveWindows });
+    
+    console.log('Window reactivated successfully with ID:', newWindow.id);
+    return true;
+  } catch (error) {
+    console.error('Error reactivating window:', error);
+    return false;
+  }
+}
+
+/**
+ * Restores parent-child relationships between tabs in a reactivated window
+ * 
+ * @param {Array<Object>} originalTabs - Array of original tab data with relationship info
+ * @param {Object<number, number>} tabIdMapping - Mapping of original tab IDs to new IDs
+ * @returns {Promise<void>}
+ */
+async function restoreTabRelationships(originalTabs, tabIdMapping) {
+  try {
+    // Get current relationships
+    const { tabRelationships } = await chrome.storage.local.get(['tabRelationships']);
+    const relationships = tabRelationships || {};
+    
+    // Create new relationships based on the original ones
+    for (const tab of originalTabs) {
+      if (tab.parentTabId && tab.originalId) {
+        const newTabId = tabIdMapping[tab.originalId];
+        const newParentId = tabIdMapping[tab.parentTabId];
+        
+        // Only create relationship if both tabs exist in the new window
+        if (newTabId && newParentId) {
+          relationships[newTabId] = {
+            parentTabId: newParentId,
+            createdAt: Date.now()
+          };
+        }
+      }
+    }
+    
+    // Save updated relationships
+    await chrome.storage.local.set({ tabRelationships: relationships });
+  } catch (error) {
+    console.error('Error restoring tab relationships:', error);
+  }
+}
+
+/**
+ * Exports all inactive window data to a JSON string
+ * 
+ * @returns {Promise<string>} - JSON string containing all inactive window data
+ */
+async function exportInactiveWindows() {
+  try {
+    const { inactiveWindows } = await chrome.storage.local.get(['inactiveWindows']);
+    
+    if (!inactiveWindows) {
+      return JSON.stringify({ inactiveWindows: [] });
+    }
+    
+    return JSON.stringify({ 
+      inactiveWindows,
+      exportedAt: Date.now(),
+      version: '1.0'
+    }, null, 2); // Pretty print with 2-space indentation
+  } catch (error) {
+    console.error('Error exporting inactive windows:', error);
+    throw error;
+  }
+}
+
+/**
+ * Imports inactive window data from a JSON string
+ * 
+ * @param {string} jsonData - JSON string containing inactive window data
+ * @returns {Promise<{success: boolean, message: string, count: number}>} - Result of the import
+ */
+async function importInactiveWindows(jsonData) {
+  try {
+    if (!jsonData) {
+      return { success: false, message: 'No data provided', count: 0 };
+    }
+    
+    // Parse the JSON data
+    const data = JSON.parse(jsonData);
+    
+    if (!data.inactiveWindows || !Array.isArray(data.inactiveWindows)) {
+      return { success: false, message: 'Invalid data format', count: 0 };
+    }
+    
+    // Get current inactive windows
+    const { inactiveWindows } = await chrome.storage.local.get(['inactiveWindows']);
+    const currentWindows = inactiveWindows || [];
+    
+    // Add imported windows to the list
+    const updatedWindows = [...currentWindows, ...data.inactiveWindows];
+    
+    // Save the updated list
+    await chrome.storage.local.set({ inactiveWindows: updatedWindows });
+    
+    return { 
+      success: true, 
+      message: `Successfully imported ${data.inactiveWindows.length} inactive windows`,
+      count: data.inactiveWindows.length
+    };
+  } catch (error) {
+    console.error('Error importing inactive windows:', error);
+    return { 
+      success: false, 
+      message: `Error importing data: ${error.message}`,
+      count: 0
+    };
+  }
+}
+
+// Listen for messages related to inactive window management
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'deactivateWindow') {
+    deactivateWindow(request.windowId)
+      .then(success => sendResponse({ success }))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: error.message || 'Failed to deactivate window' 
+      }));
+    return true; // Required for async sendResponse
+  }
+  
+  if (request.action === 'reactivateWindow') {
+    reactivateWindow(request.windowIndex)
+      .then(success => sendResponse({ success }))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: error.message || 'Failed to reactivate window' 
+      }));
+    return true;
+  }
+  
+  if (request.action === 'getInactiveWindows') {
+    chrome.storage.local.get(['inactiveWindows'], (result) => {
+      sendResponse({ 
+        inactiveWindows: result.inactiveWindows || [] 
+      });
+    });
+    return true;
+  }
+  
+  if (request.action === 'exportInactiveWindows') {
+    exportInactiveWindows()
+      .then(jsonData => sendResponse({ success: true, data: jsonData }))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: error.message || 'Failed to export inactive windows' 
+      }));
+    return true;
+  }
+  
+  if (request.action === 'importInactiveWindows') {
+    importInactiveWindows(request.data)
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ 
+        success: false, 
+        message: error.message || 'Failed to import inactive windows',
+        count: 0
+      }));
+    return true;
+  }
+});

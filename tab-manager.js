@@ -34,9 +34,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentWindowTabsElement = document.getElementById('current-window-tabs');
   const filterAllButton = document.getElementById('filter-all');
   const filterCurrentWindowButton = document.getElementById('filter-current-window');
+  const filterInactiveButton = document.getElementById('filter-inactive');
   const sortButton = document.getElementById('sort-button');
   const groupButton = document.getElementById('group-button');
   const dropdownContent = document.querySelectorAll('.dropdown-content');
+  
+  // Inactive windows elements
+  const inactiveWindowsContainer = document.querySelector('.inactive-windows-container');
+  const inactiveWindowsList = document.getElementById('inactive-windows-list');
+  const noInactiveWindows = document.getElementById('no-inactive-windows');
+  const inactiveWindowsCount = document.getElementById('inactive-windows-count');
+  const deactivateWindowButton = document.getElementById('deactivate-window-button');
+  const importExportButton = document.getElementById('import-export-button');
   
   // Modal elements
   const createGroupModal = document.getElementById('create-group-modal');
@@ -45,7 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const selectableTabsContainer = document.getElementById('selectable-tabs');
   const createGroupBtn = document.getElementById('create-group-button');
   const cancelGroupBtn = document.getElementById('cancel-group-button');
-  const closeModalBtn = document.querySelector('.close-modal-button');
+  const closeModalBtns = document.querySelectorAll('.close-modal-button');
+  
+  // Import/Export modal elements
+  const importExportModal = document.getElementById('import-export-modal');
+  const exportDataTextarea = document.getElementById('export-data');
+  const exportButton = document.getElementById('export-button');
+  const importButton = document.getElementById('import-button');
+  const closeImportExportButton = document.getElementById('close-import-export-button');
+  const importExportStatus = document.querySelector('.import-export-status');
+  const importExportMessage = document.getElementById('import-export-message');
 
   // State variables
   let allTabs = [];
@@ -58,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let searchQuery = '';
   let currentWindowTabCount = 0;
   let currentWindowId = null;
+  let inactiveWindows = []; // Store inactive windows
 
   // Fetch all tabs
   const fetchTabs = async () => {
@@ -93,6 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initialize filtered tabs
         filteredTabs = [...allTabs];
         
+        // Fetch inactive windows
+        fetchInactiveWindows();
+        
         // Apply current filter
         applyFilters();
         
@@ -107,6 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         allTabs = await chrome.tabs.query({});
         filteredTabs = [...allTabs];
+        
+        // Fetch inactive windows
+        fetchInactiveWindows();
+        
         applyFilters();
         updateStats();
         renderTabs();
@@ -114,6 +140,28 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Fallback query also failed:', fallbackError);
       }
     }
+  };
+  
+  // Fetch inactive windows
+  const fetchInactiveWindows = () => {
+    chrome.runtime.sendMessage({ action: 'getInactiveWindows' }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error fetching inactive windows:', chrome.runtime.lastError.message);
+        return;
+      }
+      
+      inactiveWindows = response.inactiveWindows || [];
+      
+      // Update the inactive windows count
+      if (inactiveWindowsCount) {
+        inactiveWindowsCount.textContent = inactiveWindows.length;
+      }
+      
+      // If we're in the inactive windows view, render them
+      if (currentFilter === 'inactive') {
+        renderInactiveWindows();
+      }
+    });
   };
 
   // Apply filters and sorting to tabs
@@ -124,10 +172,155 @@ document.addEventListener('DOMContentLoaded', () => {
         filteredTabs = allTabs.filter(tab => tab.windowId === currentWindow.id);
         applySearchAndSort();
       });
+    } else if (currentFilter === 'inactive') {
+      // For inactive windows view, we'll show the inactive windows list instead of tabs
+      // Hide the tab list and show the inactive windows container
+      if (tabList) tabList.innerHTML = '';
+      if (noResults) noResults.classList.add('hidden');
+      if (domainListContainer) domainListContainer.classList.remove('visible');
+      if (groupListContainer) groupListContainer.classList.remove('visible');
+      if (treeViewContainer) treeViewContainer.classList.remove('visible');
+      
+      // Show inactive windows container
+      if (inactiveWindowsContainer) {
+        inactiveWindowsContainer.classList.remove('hidden');
+        renderInactiveWindows();
+      }
+      
+      // Hide all other containers
+      if (tabList) tabList.style.display = 'none';
+      return; // Skip applySearchAndSort for inactive windows
     } else {
       filteredTabs = [...allTabs];
       applySearchAndSort();
     }
+  };
+  
+  // Render inactive windows in the UI
+  const renderInactiveWindows = () => {
+    if (!inactiveWindowsList) return;
+    
+    inactiveWindowsList.innerHTML = '';
+    
+    if (inactiveWindows.length === 0) {
+      if (noInactiveWindows) noInactiveWindows.classList.remove('hidden');
+      return;
+    }
+    
+    if (noInactiveWindows) noInactiveWindows.classList.add('hidden');
+    
+    // Sort inactive windows by deactivation time (newest first)
+    const sortedWindows = [...inactiveWindows].sort((a, b) => b.deactivatedAt - a.deactivatedAt);
+    
+    // Create a window item for each inactive window
+    sortedWindows.forEach((windowData, index) => {
+      const windowItem = document.createElement('div');
+      windowItem.className = 'inactive-window-item';
+      windowItem.dataset.windowIndex = index;
+      
+      // Format date for display
+      const deactivatedDate = new Date(windowData.deactivatedAt);
+      const dateString = formatDate(deactivatedDate);
+      
+      // Get window name or default to Window ID
+      const windowName = windowData.name || `Window ${windowData.id}`;
+      
+      // Create a preview of the tabs in this window
+      const tabPreviews = windowData.tabs.slice(0, 5).map(tab => {
+        // Try to use favicon if available
+        const faviconSrc = tab.favIconUrl || `https://www.google.com/s2/favicons?domain=${extractDomain(tab.url)}`;
+        return `<img src="${faviconSrc}" alt="" title="${escapeHTML(tab.title)}" class="tab-favicon">`;
+      }).join('');
+      
+      // Show ellipsis if there are more tabs than shown in preview
+      const hasMoreTabs = windowData.tabs.length > 5;
+      const moreTabsIndicator = hasMoreTabs ? 
+        `<span class="more-tabs-indicator">+${windowData.tabs.length - 5} more</span>` : '';
+      
+      windowItem.innerHTML = `
+        <div class="window-header">
+          <div class="window-title">
+            <span data-feather="archive" class="icon"></span>
+            <span>${escapeHTML(windowName)}</span>
+            <span class="tab-count">${windowData.tabs.length} tab${windowData.tabs.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="window-date">${dateString}</div>
+        </div>
+        <div class="window-tabs-preview">
+          ${tabPreviews}
+          ${moreTabsIndicator}
+        </div>
+        <div class="window-actions">
+          <button class="restore-window-button" title="Restore window">
+            <span data-feather="refresh-cw" class="icon"></span>
+            Restore
+          </button>
+        </div>
+      `;
+      
+      // Initialize feather icons
+      feather.replace({ class: 'icon', node: windowItem });
+      
+      // Add event listener to restore button
+      windowItem.querySelector('.restore-window-button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        restoreInactiveWindow(index);
+      });
+      
+      inactiveWindowsList.appendChild(windowItem);
+    });
+  };
+  
+  // Restore an inactive window
+  const restoreInactiveWindow = (windowIndex) => {
+    chrome.runtime.sendMessage(
+      { action: 'reactivateWindow', windowIndex },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error restoring window:', chrome.runtime.lastError.message);
+          return;
+        }
+        
+        if (response.success) {
+          // Refresh the inactive windows list
+          fetchInactiveWindows();
+          // Also fetch tabs to update the tab list
+          fetchTabs();
+        } else {
+          console.error('Failed to restore window:', response.error);
+        }
+      }
+    );
+  };
+  
+  // Deactivate the current window
+  const deactivateCurrentWindow = () => {
+    chrome.windows.getCurrent((currentWindow) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error getting current window:', chrome.runtime.lastError.message);
+        return;
+      }
+      
+      // Confirm with the user
+      if (confirm(`Are you sure you want to deactivate the current window with ${currentWindowTabCount} tabs?`)) {
+        chrome.runtime.sendMessage(
+          { action: 'deactivateWindow', windowId: currentWindow.id },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              console.error('Error deactivating window:', chrome.runtime.lastError.message);
+              return;
+            }
+            
+            if (response.success) {
+              console.log('Window deactivated successfully');
+              // The window will be closed by the background script
+            } else {
+              console.error('Failed to deactivate window:', response.error);
+            }
+          }
+        );
+      }
+    });
   };
 
   // Apply search filter and sorting

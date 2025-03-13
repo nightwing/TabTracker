@@ -39,6 +39,7 @@
         <div class="filters">
             <button id="filter-all" class="filter-button active">All</button>
             <button id="filter-current-window" class="filter-button">Current Window</button>
+            <button id="filter-inactive" class="filter-button">Inactive Windows</button>
             <div class="dropdown">
                 <button id="sort-button" class="filter-button">
                     Sort
@@ -62,6 +63,14 @@
                     <a href="#" data-group="tree">Tree View</a>
                     <a href="#" data-group="create">Create New Group</a>
                 </div>
+            </div>
+            <div class="action-buttons">
+                <button id="deactivate-window-button" class="action-button" title="Deactivate Current Window">
+                    <span class="icon" data-feather="archive"></span>
+                </button>
+                <button id="import-export-button" class="action-button" title="Import/Export Windows">
+                    <span class="icon" data-feather="save"></span>
+                </button>
             </div>
         </div>
 
@@ -90,6 +99,16 @@
             <div id="no-results" class="no-results hidden">
                 <span class="icon" data-feather="search"></span>
                 <p>No tabs match your search</p>
+            </div>
+        </div>
+        
+        <div class="inactive-windows-container hidden">
+            <div id="inactive-windows-list">
+                <!-- Inactive windows will be inserted here -->
+            </div>
+            <div id="no-inactive-windows" class="no-results hidden">
+                <span class="icon" data-feather="archive"></span>
+                <p>No inactive windows</p>
             </div>
         </div>
         
@@ -130,6 +149,36 @@
                 <div class="modal-footer">
                     <button id="create-group-button" class="primary-button">Create Group</button>
                     <button id="cancel-group-button" class="secondary-button">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import/Export Modal -->
+        <div id="import-export-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Import/Export Inactive Windows</h3>
+                    <button class="close-modal-button">
+                        <span class="icon" data-feather="x"></span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="export-data">Window Data:</label>
+                        <textarea id="export-data" rows="12" placeholder="Paste exported window data here..."></textarea>
+                    </div>
+                    <div class="import-export-status hidden">
+                        <div class="status-icon">
+                            <span class="icon success hidden" data-feather="check-circle"></span>
+                            <span class="icon error hidden" data-feather="alert-circle"></span>
+                        </div>
+                        <p id="import-export-message"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="export-button" class="primary-button">Export</button>
+                    <button id="import-button" class="primary-button">Import</button>
+                    <button id="close-import-export-button" class="secondary-button">Close</button>
                 </div>
             </div>
         </div>
