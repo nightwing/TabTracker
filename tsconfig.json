@@ -1,4 +1,11 @@
 {
+  /**
+   * @fileoverview tsconfig.json for browser extension with JSDoc type checking
+   * 
+   * This configuration enables TypeScript's type checking capabilities on JavaScript files
+   * without requiring actual TypeScript compilation. It uses JSDoc annotations for type 
+   * information and performs static analysis on JavaScript files.
+   */
   "compilerOptions": {
     "target": "ES2020",
     "module": "ES2020",
@@ -8,21 +15,27 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
     "rootDir": ".",
-    "sourceMap": true,
+    "sourceMap": true, 
     "lib": ["DOM", "DOM.Iterable", "ES2020"],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "allowJs": true,
-    "checkJs": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noErrorTruncation": true
+    
+    // JavaScript support
+    "allowJs": true,       // Allow JavaScript files
+    "checkJs": true,       // Type check JavaScript files
+    
+    // Strict type checking
+    "noImplicitAny": true,          // Raise error on expressions with implicit 'any' type
+    "strictNullChecks": true,       // Enable strict null checking
+    "strictFunctionTypes": true,    // Enable strict checking of function types
+    "noImplicitReturns": true,      // Report error when not all code paths return a value
+    "noImplicitThis": true,         // Raise error on 'this' expressions with implied 'any' type
+    
+    // Development settings
+    "noUnusedLocals": false,        // Disabled during development
+    "noUnusedParameters": false,    // Disabled during development
+    "noErrorTruncation": true       // Show full error messages
   },
   "include": [
     "background.js",
@@ -30,5 +43,7 @@
     "utils.js",
     "popup/**/*.js",
     "types/**/*.d.ts"
-  ]
+  ],
+  // Explicitly exclude node_modules to improve performance
+  "exclude": ["node_modules"]
 }

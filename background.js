@@ -1,30 +1,23 @@
 // @ts-check
-
-/** @typedef {chrome.tabs.Tab & {
-  parentTabId?: number;
-  childTabs?: number[];
-  lastAccessed?: number;
-  youtubeQueue?: Array<YouTubeVideo>;
-  hasRestoredQueue?: boolean;
-}} TabWithRelationship */
-
-/** @typedef {{
-  title: string;
-  url: string;
-  videoId: string;
-  timestamp?: number;
-}} YouTubeVideo */
-
-/** @typedef {{
-  type: string;
-  payload?: any;
-}} ExtensionMessage */
-
-/** @typedef {{
-  success: boolean;
-  data?: any;
-  error?: string;
-}} MessageResponse */
+/// <reference path="./types/extension.d.ts" />
+/**
+ * @fileoverview Background script for Tab Manager browser extension
+ * 
+ * This script runs in the background and handles:
+ * - Tab tracking (creation, removal, updates)
+ * - Parent-child tab relationship tracking
+ * - YouTube queue detection and preservation
+ * - Tab history recording
+ * - Browser badge updates
+ * - Tab manager window creation
+ * - Inter-component message passing
+ * 
+ * It maintains persistence using chrome.storage.local to retain tab relationships
+ * and YouTube queue information across browser sessions.
+ * 
+ * @version 1.0.0
+ * @license MIT
+ */
 
 // Background script for Tab Tracker extension
 // This script runs in the background and keeps track of tabs
@@ -88,9 +81,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-// Function to notify all tab manager windows that tabs have been updated
 /**
- * Function to notify all tab manager windows that tabs have been updated
+ * Notifies all tab manager windows that tabs have been updated
+ * 
+ * This function broadcasts a message to all tab manager windows
+ * and updates the badge count in the browser toolbar.
+ * It handles the "Receiving end does not exist" error that occurs when
+ * no tab manager windows are open to receive the message.
  */
 function notifyTabsUpdated() {
   try {
@@ -111,7 +108,15 @@ function notifyTabsUpdated() {
   updateBadgeWithTabCount();
 }
 
-// Function to update the extension badge with the total tab count
+/**
+ * Updates the extension badge with the total tab count
+ * 
+ * This function displays a count of all open tabs in the browser
+ * as a badge on the extension icon. It helps users keep track of
+ * how many tabs they have open at a glance.
+ * 
+ * The badge uses a blue background with white text for optimal visibility.
+ */
 function updateBadgeWithTabCount() {
   chrome.tabs.query({}, (tabs) => {
     const totalTabs = tabs.length;

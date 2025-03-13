@@ -1,3 +1,20 @@
+// @ts-check
+/// <reference path="./types/extension.d.ts" />
+/**
+ * @fileoverview Tab Manager UI component for displaying and manipulating browser tabs
+ * 
+ * This script handles the user interface for the tab manager popup window, including:
+ * - Displaying tabs in various view modes (list, tree, groups)
+ * - Searching and filtering tabs
+ * - Grouping tabs by domain or custom groups
+ * - Sorting tabs by different criteria
+ * - Tree view for parent-child tab relationships
+ * - YouTube queue management
+ * 
+ * @version 1.0.0
+ * @license MIT
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize Feather icons
   feather.replace({ class: 'icon' });
