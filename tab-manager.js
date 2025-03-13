@@ -1743,12 +1743,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       
+      // Show loading state
+      if (importButton) {
+        importButton.disabled = true;
+        importButton.innerHTML = '<span class="loading-spinner"></span> Importing...';
+      }
+      if (importExportStatus) importExportStatus.classList.add('hidden');
+      
       try {
         // Try to parse as JSON to validate
         JSON.parse(importData);
         
         // Send to background script
         chrome.runtime.sendMessage({ action: 'importInactiveWindows', data: importData }, (response) => {
+          // Reset button state regardless of success/failure
+          if (importButton) {
+            importButton.disabled = false;
+            importButton.innerHTML = 'Import';
+          }
+          
           if (chrome.runtime.lastError) {
             console.error('Error importing windows:', chrome.runtime.lastError.message);
             showImportExportResult(false, 'Failed to import: ' + chrome.runtime.lastError.message);
@@ -1767,7 +1780,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       } catch (error) {
-        // Invalid JSON
+        // Invalid JSON - reset button state and show error
+        if (importButton) {
+          importButton.disabled = false;
+          importButton.innerHTML = 'Import';
+        }
         showImportExportResult(false, 'Invalid data format. Please enter valid JSON data.');
       }
     });
