@@ -293,18 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const domainContent = document.createElement('div');
           domainContent.className = 'tree-content';
           
-          // Add tabs to domain content
-          domainTabs.forEach(tab => {
-            // Skip tabs that have parents in the same domain - they'll be displayed as children
-            const hasParentInSameDomain = tab.parentTabId && 
-              domainTabs.some(t => t.id === tab.parentTabId);
-              
-            if (!hasParentInSameDomain) {
-              // This is a root tab in this domain - render it with its children
-              renderTabWithChildren(tab, domainContent, domainTabs);
-            }
-          });
-          
           // Helper function to recursively render a tab and its children
           const renderTabWithChildren = (tab, container, availableTabs) => {
             const tabElement = createTabElement(tab);
@@ -421,6 +409,18 @@ document.addEventListener('DOMContentLoaded', () => {
               container.appendChild(tabElement);
             }
           };
+          
+          // Add tabs to domain content
+          domainTabs.forEach(tab => {
+            // Skip tabs that have parents in the same domain - they'll be displayed as children
+            const hasParentInSameDomain = tab.parentTabId && 
+              domainTabs.some(t => t.id === tab.parentTabId);
+              
+            if (!hasParentInSameDomain) {
+              // This is a root tab in this domain - render it with its children
+              renderTabWithChildren(tab, domainContent, domainTabs);
+            }
+          });
           
           // Add event listener to toggle domain expansion
           domainHeader.addEventListener('click', () => {
