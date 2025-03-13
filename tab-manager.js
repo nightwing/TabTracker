@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inactiveWindowsList = document.getElementById('inactive-windows-list');
   const noInactiveWindows = document.getElementById('no-inactive-windows');
   const inactiveWindowsCount = document.getElementById('inactive-windows-count');
+  const inactiveWindowsLoadingIndicator = document.getElementById('inactive-windows-loading');
   const deactivateWindowButton = document.getElementById('deactivate-window-button');
   const importExportButton = document.getElementById('import-export-button');
   
@@ -144,23 +145,45 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Fetch inactive windows
   const fetchInactiveWindows = () => {
+    // Show loading indicator if we have one
+    if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.remove('hidden');
+    
+    // Send message to background script to get inactive windows
     chrome.runtime.sendMessage({ action: 'getInactiveWindows' }, (response) => {
+      // Always hide loading indicator when we're done, regardless of success or failure
+      const hideLoadingIndicator = () => {
+        if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.add('hidden');
+      };
+      
       if (chrome.runtime.lastError) {
         console.error('Error fetching inactive windows:', chrome.runtime.lastError.message);
+        hideLoadingIndicator();
         return;
       }
       
-      inactiveWindows = response.inactiveWindows || [];
-      
-      // Update the inactive windows count
-      if (inactiveWindowsCount) {
-        inactiveWindowsCount.textContent = inactiveWindows.length;
+      if (response) {
+        // Update our local copy
+        inactiveWindows = response.inactiveWindows || [];
+        
+        // Update the inactive windows count if we have the element
+        if (inactiveWindowsCount) {
+          inactiveWindowsCount.textContent = inactiveWindows.length;
+        }
+        
+        // Show inactive windows container and hide tab list if in 'inactive' filter mode
+        if (currentFilter === 'inactive') {
+          if (inactiveWindowsContainer) inactiveWindowsContainer.classList.remove('hidden');
+          if (tabList) tabList.style.display = 'none';
+          
+          // Render inactive windows
+          renderInactiveWindows();
+        }
+      } else {
+        console.error('Failed to fetch inactive windows: Response was undefined');
       }
       
-      // If we're in the inactive windows view, render them
-      if (currentFilter === 'inactive') {
-        renderInactiveWindows();
-      }
+      // Hide loading indicator
+      hideLoadingIndicator();
     });
   };
 
@@ -273,21 +296,33 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Restore an inactive window
   const restoreInactiveWindow = (windowIndex) => {
+    // Show loading indicator if we have one
+    if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.remove('hidden');
+    
     chrome.runtime.sendMessage(
       { action: 'reactivateWindow', windowIndex },
       (response) => {
+        // Hide loading indicator when done with the operation
+        const hideLoadingIndicator = () => {
+          if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.add('hidden');
+        };
+        
         if (chrome.runtime.lastError) {
           console.error('Error restoring window:', chrome.runtime.lastError.message);
+          hideLoadingIndicator();
           return;
         }
         
         if (response.success) {
+          console.log('Window restored successfully');
           // Refresh the inactive windows list
           fetchInactiveWindows();
           // Also fetch tabs to update the tab list
           fetchTabs();
+          // No need to hide the indicator here as fetchInactiveWindows will do it
         } else {
           console.error('Failed to restore window:', response.error);
+          hideLoadingIndicator();
         }
       }
     );
@@ -295,9 +330,18 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Deactivate the current window
   const deactivateCurrentWindow = () => {
+    // Show loading indicator if we have one
+    if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.remove('hidden');
+    
     chrome.windows.getCurrent((currentWindow) => {
+      // Always hide loading indicator when we're done with the whole operation
+      const hideLoadingIndicator = () => {
+        if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.add('hidden');
+      };
+      
       if (chrome.runtime.lastError) {
         console.error('Error getting current window:', chrome.runtime.lastError.message);
+        hideLoadingIndicator();
         return;
       }
       
@@ -308,17 +352,23 @@ document.addEventListener('DOMContentLoaded', () => {
           (response) => {
             if (chrome.runtime.lastError) {
               console.error('Error deactivating window:', chrome.runtime.lastError.message);
+              hideLoadingIndicator();
               return;
             }
             
             if (response.success) {
               console.log('Window deactivated successfully');
               // The window will be closed by the background script
+              // No need to hide loading indicator as the window will close
             } else {
               console.error('Failed to deactivate window:', response.error);
+              hideLoadingIndicator();
             }
           }
         );
+      } else {
+        // User cancelled the operation
+        hideLoadingIndicator();
       }
     });
   };
@@ -1644,7 +1694,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // Handle export button click
   if (exportButton) {
     exportButton.addEventListener('click', () => {
+      // Show loading state
+      if (exportButton) {
+        exportButton.disabled = true;
+        exportButton.innerHTML = '<span class="loading-spinner"></span> Exporting...';
+      }
+      if (importExportStatus) importExportStatus.classList.add('hidden');
+      
       chrome.runtime.sendMessage({ action: 'exportInactiveWindows' }, (response) => {
+        // Reset button state
+        if (exportButton) {
+          exportButton.disabled = false;
+          exportButton.innerHTML = 'Export';
+        }
+        
         if (chrome.runtime.lastError) {
           console.error('Error exporting windows:', chrome.runtime.lastError.message);
           showImportExportResult(false, 'Failed to export: ' + chrome.runtime.lastError.message);
@@ -1751,62 +1814,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return true;
   });
 
-  // Function to fetch inactive windows
-  const fetchInactiveWindows = () => {
-    // Show loading indicator if we have one
-    if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.remove('hidden');
-    
-    // Send message to background script to get inactive windows
-    chrome.runtime.sendMessage({ action: 'getInactiveWindows' }, (response) => {
-      if (chrome.runtime.lastError) {
-        console.error('Error fetching inactive windows:', chrome.runtime.lastError.message);
-        return;
-      }
-      
-      if (response && response.success) {
-        // Update our local copy
-        inactiveWindows = response.windows || [];
-        
-        // Show inactive windows container and hide tab list if in 'inactive' filter mode
-        if (currentFilter === 'inactive') {
-          if (inactiveWindowsContainer) inactiveWindowsContainer.classList.remove('hidden');
-          if (tabList) tabList.style.display = 'none';
-        }
-        
-        // Render inactive windows
-        renderInactiveWindows();
-      } else {
-        console.error('Failed to fetch inactive windows:', response ? response.error : 'Unknown error');
-      }
-      
-      // Hide loading indicator
-      if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.add('hidden');
-    });
-  };
-  
-  // Function to deactivate current window
-  const deactivateCurrentWindow = () => {
-    // Confirm with user
-    if (!confirm('Are you sure you want to deactivate the current window? This will close all tabs in this window.')) {
-      return;
-    }
-    
-    // Send message to background script
-    chrome.runtime.sendMessage({ action: 'deactivateWindow', windowId: currentWindowId }, (response) => {
-      if (chrome.runtime.lastError) {
-        console.error('Error deactivating window:', chrome.runtime.lastError.message);
-        alert('Failed to deactivate window: ' + chrome.runtime.lastError.message);
-        return;
-      }
-      
-      if (response && response.success) {
-        // Window is closed automatically by the background script
-        console.log('Window deactivated successfully');
-      } else {
-        alert('Failed to deactivate window: ' + (response ? response.error : 'Unknown error'));
-      }
-    });
-  };
+  // The duplicate functions were removed to prevent redeclaration errors
   
   // Initial load
   loadCustomGroups();
