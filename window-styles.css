@@ -474,19 +474,22 @@ html, body {
   padding: 6px 12px;
   cursor: pointer;
   font-weight: 600;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--background-color);
+  margin-bottom: 2px;
+  background-color: #2a2a2a;
+  color: #e1e1e1;
+  border-radius: 4px;
   transition: background-color 0.2s;
 }
 
 .tree-window:hover {
-  background-color: var(--hover-color);
+  background-color: #3a3a3a;
 }
 
 .tree-window .window-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: #e1e1e1;
 }
 
 .tree-domain {
@@ -495,19 +498,21 @@ html, body {
   padding: 5px 10px;
   cursor: pointer;
   font-weight: 500;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: #2a2a2a;
+  border-radius: 4px;
   margin-top: 3px;
   transition: background-color 0.2s;
 }
 
 .tree-domain:hover {
-  background-color: var(--hover-color);
+  background-color: #3a3a3a;
 }
 
 .tree-domain .domain-name {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: #e1e1e1;
 }
 
 .tree-domain .domain-favicon {
@@ -516,11 +521,12 @@ html, body {
 }
 
 .tree-item-count {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(130, 130, 130, 0.3);
   border-radius: 10px;
   padding: 2px 6px;
   font-size: 12px;
   margin-left: 8px;
+  color: #e1e1e1;
 }
 
 .tree-view-container {

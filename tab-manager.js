@@ -509,10 +509,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const windowInfo = `Window ${windowId} - ${allWindowTabs.length} tab${allWindowTabs.length > 1 ? 's' : ''}`;
       windowHeader.title = windowInfo;
       
+      // Check if the window is a popup
+      const isPopup = allWindowTabs.some(tab => tab.url && tab.url.includes('popup'));
+      const windowLabel = isPopup ? `Window (popup)` : `Window`;
+      
       windowHeader.innerHTML = `
         <div class="window-title">
-          <span data-feather="layout" class="icon"></span>
-          <span>Window ${windowId}</span>
+          <span data-feather="globe" class="icon"></span>
+          <span>${windowLabel}</span>
           <span class="tree-item-count">${allWindowTabs.length}</span>
         </div>
       `;
@@ -1037,31 +1041,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const isYouTubeTab = domain.includes('youtube.com') && tab.url.includes('watch');
     const hasYouTubeQueue = tab.youtubeQueue && tab.youtubeQueue.length > 0;
     
+    // Check for specific tab types to show specific icons
+    const isStackOverflow = domain.includes('stackoverflow.com');
+    const isGithub = domain.includes('github.com');
+    const isGoogle = domain.includes('google.com');
+    const isChrome = tab.url.includes('chrome://') || tab.url.includes('chrome.google.com');
+    
     // Create the tab element HTML with parent-child indicators
     let tabHTML = '';
     
-    // Add parent indicator if this tab has children
-    if (tab.childTabs && tab.childTabs.length > 0) {
-      tabHTML += `
-        <div class="parent-indicator">
-          <span data-feather="corner-right-down" class="icon parent-icon"></span>
-          <span class="child-count">${tab.childTabs.length}</span>
-        </div>
-      `;
-    }
-    
-    // Add child indicator if this tab is a child
-    if (tab.parentTabId) {
-      tabHTML += `
-        <div class="child-indicator">
-          <span data-feather="corner-up-left" class="icon child-icon"></span>
-        </div>
-      `;
+    // Use site-specific icons for some special domains
+    let iconHtml = '';
+    if (isStackOverflow) {
+      iconHtml = `<span class="site-icon stackoverflow-icon">📖</span>`;
+    } else if (isGithub) {
+      iconHtml = `<span class="site-icon github-icon">📖</span>`;
+    } else if (isGoogle) {
+      iconHtml = `<span data-feather="search" class="icon"></span>`;
+    } else if (isChrome) {
+      iconHtml = `<span data-feather="chrome" class="icon"></span>`;
+    } else {
+      iconHtml = `<img class="tab-favicon" src="${faviconUrl}" alt="">`;
     }
     
     // Add main tab content
     tabHTML += `
-      <img class="tab-favicon" src="${faviconUrl}" alt="">
+      ${iconHtml}
       <div class="tab-info" title="${tab.url}">
         <div class="tab-title" title="${tab.title}">${escapeHTML(tab.title)}</div>
     `;
