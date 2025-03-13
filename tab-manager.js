@@ -1216,16 +1216,56 @@ document.addEventListener('DOMContentLoaded', () => {
   filterAllButton.addEventListener('click', () => {
     filterAllButton.classList.add('active');
     filterCurrentWindowButton.classList.remove('active');
+    if (filterInactiveButton) filterInactiveButton.classList.remove('active');
     currentFilter = 'all';
+    
+    // Hide inactive windows container and show tab containers
+    if (inactiveWindowsContainer) inactiveWindowsContainer.classList.add('hidden');
+    if (tabList) tabList.style.display = 'block';
+    
     applyFilters();
   });
 
   filterCurrentWindowButton.addEventListener('click', () => {
     filterAllButton.classList.remove('active');
     filterCurrentWindowButton.classList.add('active');
+    if (filterInactiveButton) filterInactiveButton.classList.remove('active');
     currentFilter = 'current-window';
+    
+    // Hide inactive windows container and show tab containers
+    if (inactiveWindowsContainer) inactiveWindowsContainer.classList.add('hidden');
+    if (tabList) tabList.style.display = 'block';
+    
     applyFilters();
   });
+  
+  // Inactive windows filter button
+  if (filterInactiveButton) {
+    filterInactiveButton.addEventListener('click', () => {
+      filterAllButton.classList.remove('active');
+      filterCurrentWindowButton.classList.remove('active');
+      filterInactiveButton.classList.add('active');
+      currentFilter = 'inactive';
+      
+      // Refresh inactive windows
+      fetchInactiveWindows();
+      applyFilters();
+    });
+  }
+  
+  // Deactivate window button
+  if (deactivateWindowButton) {
+    deactivateWindowButton.addEventListener('click', () => {
+      deactivateCurrentWindow();
+    });
+  }
+  
+  // Import/Export button
+  if (importExportButton) {
+    importExportButton.addEventListener('click', () => {
+      showImportExportModal();
+    });
+  }
 
   // Event listener for sort dropdown
   sortButton.addEventListener('click', (e) => {
@@ -1558,7 +1598,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   cancelGroupBtn.addEventListener('click', hideCreateGroupModal);
-  closeModalBtn.addEventListener('click', hideCreateGroupModal);
+  
+  // Add event listeners to close modal buttons
+  closeModalBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const modal = e.target.closest('.modal');
+      if (modal && modal.id === 'create-group-modal') {
+        hideCreateGroupModal();
+      } else if (modal && modal.id === 'import-export-modal') {
+        hideImportExportModal();
+      }
+    });
+  });
 
   // Close modal when clicking outside
   createGroupModal.addEventListener('click', (e) => {
@@ -1566,6 +1617,130 @@ document.addEventListener('DOMContentLoaded', () => {
       hideCreateGroupModal();
     }
   });
+  
+  // Functions for import/export modal
+  const showImportExportModal = () => {
+    // Clear previous data
+    if (exportDataTextarea) exportDataTextarea.value = '';
+    if (importExportStatus) importExportStatus.classList.add('hidden');
+    
+    // Show the modal
+    if (importExportModal) {
+      importExportModal.classList.remove('hidden');
+      importExportModal.classList.add('visible');
+      
+      // Focus on textarea for better UX
+      if (exportDataTextarea) exportDataTextarea.focus();
+    }
+  };
+  
+  const hideImportExportModal = () => {
+    if (importExportModal) {
+      importExportModal.classList.remove('visible');
+      importExportModal.classList.add('hidden');
+    }
+  };
+  
+  // Handle export button click
+  if (exportButton) {
+    exportButton.addEventListener('click', () => {
+      chrome.runtime.sendMessage({ action: 'exportInactiveWindows' }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('Error exporting windows:', chrome.runtime.lastError.message);
+          showImportExportResult(false, 'Failed to export: ' + chrome.runtime.lastError.message);
+          return;
+        }
+        
+        if (response.success) {
+          // Copy to clipboard
+          if (exportDataTextarea) {
+            exportDataTextarea.value = response.data;
+            exportDataTextarea.select();
+            document.execCommand('copy');
+            
+            // Show success message
+            showImportExportResult(true, 'Data exported and copied to clipboard!');
+          }
+        } else {
+          // Show error message
+          showImportExportResult(false, 'Failed to export: ' + (response.error || 'Unknown error'));
+        }
+      });
+    });
+  }
+  
+  // Handle import button click
+  if (importButton) {
+    importButton.addEventListener('click', () => {
+      // Get data from textarea
+      const importData = exportDataTextarea ? exportDataTextarea.value.trim() : '';
+      
+      if (!importData) {
+        showImportExportResult(false, 'Please enter data to import');
+        return;
+      }
+      
+      try {
+        // Try to parse as JSON to validate
+        JSON.parse(importData);
+        
+        // Send to background script
+        chrome.runtime.sendMessage({ action: 'importInactiveWindows', data: importData }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('Error importing windows:', chrome.runtime.lastError.message);
+            showImportExportResult(false, 'Failed to import: ' + chrome.runtime.lastError.message);
+            return;
+          }
+          
+          if (response.success) {
+            // Show success message
+            showImportExportResult(true, `Successfully imported ${response.count} window(s)`);
+            
+            // Refresh inactive windows list
+            fetchInactiveWindows();
+          } else {
+            // Show error message
+            showImportExportResult(false, 'Failed to import: ' + (response.message || 'Unknown error'));
+          }
+        });
+      } catch (error) {
+        // Invalid JSON
+        showImportExportResult(false, 'Invalid data format. Please enter valid JSON data.');
+      }
+    });
+  }
+  
+  // Close import/export modal
+  if (closeImportExportButton) {
+    closeImportExportButton.addEventListener('click', hideImportExportModal);
+  }
+  
+  // When clicking outside the import/export modal, close it
+  if (importExportModal) {
+    importExportModal.addEventListener('click', (e) => {
+      if (e.target === importExportModal) {
+        hideImportExportModal();
+      }
+    });
+  }
+  
+  // Function to show import/export result
+  const showImportExportResult = (success, message) => {
+    if (!importExportStatus || !importExportMessage) return;
+    
+    // Show status container
+    importExportStatus.classList.remove('hidden');
+    
+    // Set message
+    importExportMessage.textContent = message;
+    
+    // Show appropriate icon
+    const successIcon = importExportStatus.querySelector('.success');
+    const errorIcon = importExportStatus.querySelector('.error');
+    
+    if (successIcon) successIcon.classList.toggle('hidden', !success);
+    if (errorIcon) errorIcon.classList.toggle('hidden', success);
+  };
 
   // Listen for tab changes from background
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -1576,8 +1751,66 @@ document.addEventListener('DOMContentLoaded', () => {
     return true;
   });
 
+  // Function to fetch inactive windows
+  const fetchInactiveWindows = () => {
+    // Show loading indicator if we have one
+    if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.remove('hidden');
+    
+    // Send message to background script to get inactive windows
+    chrome.runtime.sendMessage({ action: 'getInactiveWindows' }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error fetching inactive windows:', chrome.runtime.lastError.message);
+        return;
+      }
+      
+      if (response && response.success) {
+        // Update our local copy
+        inactiveWindows = response.windows || [];
+        
+        // Show inactive windows container and hide tab list if in 'inactive' filter mode
+        if (currentFilter === 'inactive') {
+          if (inactiveWindowsContainer) inactiveWindowsContainer.classList.remove('hidden');
+          if (tabList) tabList.style.display = 'none';
+        }
+        
+        // Render inactive windows
+        renderInactiveWindows();
+      } else {
+        console.error('Failed to fetch inactive windows:', response ? response.error : 'Unknown error');
+      }
+      
+      // Hide loading indicator
+      if (inactiveWindowsLoadingIndicator) inactiveWindowsLoadingIndicator.classList.add('hidden');
+    });
+  };
+  
+  // Function to deactivate current window
+  const deactivateCurrentWindow = () => {
+    // Confirm with user
+    if (!confirm('Are you sure you want to deactivate the current window? This will close all tabs in this window.')) {
+      return;
+    }
+    
+    // Send message to background script
+    chrome.runtime.sendMessage({ action: 'deactivateWindow', windowId: currentWindowId }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error deactivating window:', chrome.runtime.lastError.message);
+        alert('Failed to deactivate window: ' + chrome.runtime.lastError.message);
+        return;
+      }
+      
+      if (response && response.success) {
+        // Window is closed automatically by the background script
+        console.log('Window deactivated successfully');
+      } else {
+        alert('Failed to deactivate window: ' + (response ? response.error : 'Unknown error'));
+      }
+    });
+  };
+  
   // Initial load
   loadCustomGroups();
   loadExpandedState();
   fetchTabs();
+  fetchInactiveWindows();
 });
