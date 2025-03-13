@@ -1,7 +1,29 @@
+// @ts-check
+/** @typedef {chrome.tabs.Tab & {
+  parentTabId?: number;
+  childTabs?: number[];
+  lastAccessed?: number;
+  youtubeQueue?: Array<{title: string, url: string, videoId: string}>;
+  hasRestoredQueue?: boolean;
+}} TabWithRelationship */
+
 /**
- * Extracts the domain from a URL
+ * Extracts the domain from a URL, handling special cases for browser internal URLs
+ * 
  * @param {string} url - The URL to extract domain from
- * @returns {string} The domain name
+ * @returns {string} The domain name without 'www.' prefix or the original URL if parsing fails
+ * 
+ * @example
+ * // Returns "example.com"
+ * extractDomain("https://www.example.com/page?param=value")
+ * 
+ * @example
+ * // Returns "subdomain.example.org"
+ * extractDomain("https://subdomain.example.org/path")
+ * 
+ * @example
+ * // Returns "chrome://extensions"
+ * extractDomain("chrome://extensions")
  */
 function extractDomain(url) {
   try {
@@ -33,18 +55,18 @@ function escapeHTML(text) {
 
 /**
  * Groups tabs by domain
- * @param {Array} tabs - Array of tab objects
- * @returns {Object} Object with domain names as keys and arrays of tabs as values
+ * @param {Array<chrome.tabs.Tab>} tabs - Array of tab objects
+ * @returns {Object<string, Array<chrome.tabs.Tab>>} Object with domain names as keys and arrays of tabs as values
  */
 function groupTabsByDomain(tabs) {
   return tabs.reduce((groups, tab) => {
-    const domain = extractDomain(tab.url);
+    const domain = extractDomain(tab.url || '');
     if (!groups[domain]) {
       groups[domain] = [];
     }
     groups[domain].push(tab);
     return groups;
-  }, {});
+  }, /** @type {Object<string, Array<chrome.tabs.Tab>>} */ ({}));
 }
 
 /**

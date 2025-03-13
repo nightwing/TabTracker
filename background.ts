@@ -1,31 +1,3 @@
-// @ts-check
-
-/** @typedef {chrome.tabs.Tab & {
-  parentTabId?: number;
-  childTabs?: number[];
-  lastAccessed?: number;
-  youtubeQueue?: Array<YouTubeVideo>;
-  hasRestoredQueue?: boolean;
-}} TabWithRelationship */
-
-/** @typedef {{
-  title: string;
-  url: string;
-  videoId: string;
-  timestamp?: number;
-}} YouTubeVideo */
-
-/** @typedef {{
-  type: string;
-  payload?: any;
-}} ExtensionMessage */
-
-/** @typedef {{
-  success: boolean;
-  data?: any;
-  error?: string;
-}} MessageResponse */
-
 // Background script for Tab Tracker extension
 // This script runs in the background and keeps track of tabs
 
@@ -42,12 +14,8 @@ chrome.action.onClicked.addListener(() => {
         if (tab.url === tabManagerUrl) {
           // Found an existing tab manager window, focus it
           tabManagerFound = true;
-          if (window.id) {
-            chrome.windows.update(window.id, { focused: true });
-          }
-          if (tab.id) {
-            chrome.tabs.update(tab.id, { active: true });
-          }
+          chrome.windows.update(window.id, { focused: true });
+          chrome.tabs.update(tab.id, { active: true });
           break;
         }
       }
@@ -89,10 +57,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 // Function to notify all tab manager windows that tabs have been updated
-/**
- * Function to notify all tab manager windows that tabs have been updated
- */
-function notifyTabsUpdated() {
+function notifyTabsUpdated(): void {
   try {
     // Send message to tab manager windows, catching the error if no receivers exist
     chrome.runtime.sendMessage({
@@ -112,7 +77,7 @@ function notifyTabsUpdated() {
 }
 
 // Function to update the extension badge with the total tab count
-function updateBadgeWithTabCount() {
+function updateBadgeWithTabCount(): void {
   chrome.tabs.query({}, (tabs) => {
     const totalTabs = tabs.length;
     
@@ -139,17 +104,15 @@ chrome.tabs.onCreated.addListener((tab) => {
       let relationships = result.tabRelationships || {};
       
       // Create an entry for this child tab
-      if (tab.id) {
-        relationships[tab.id] = {
-          parentTabId: tab.openerTabId,
-          createdAt: Date.now()
-        };
+      relationships[tab.id] = {
+        parentTabId: tab.openerTabId,
+        createdAt: Date.now()
+      };
       
-        chrome.storage.local.set({ tabRelationships: relationships });
+      chrome.storage.local.set({ tabRelationships: relationships });
       
-        // Notify that tabs have updated with new relationship data
-        notifyTabsUpdated();
-      }
+      // Notify that tabs have updated with new relationship data
+      notifyTabsUpdated();
     });
   }
 });
@@ -187,13 +150,13 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
       
       // Remove the tab-specific entry
       delete youtubeQueues[`tab-${tabId}`];
-      chrome.storage.local.set({ youtubeQueues: youtubeQueues });
+      chrome.storage.local.set({ youtubeQueues });
     }
   });
 });
 
 // Check if a URL is a YouTube watch page
-function isYouTubeWatchUrl(url) {
+function isYouTubeWatchUrl(url: string): boolean {
   return url && (
     url.includes('youtube.com/watch') ||
     url.includes('youtu.be/')
@@ -201,10 +164,10 @@ function isYouTubeWatchUrl(url) {
 }
 
 // Extract video ID from YouTube URL
-function extractYouTubeVideoId(url) {
+function extractYouTubeVideoId(url: string): string | null {
   if (!url) return null;
   
-  let videoId = null;
+  let videoId: string | null = null;
   
   // Handle youtu.be format
   if (url.includes('youtu.be/')) {
@@ -222,8 +185,15 @@ function extractYouTubeVideoId(url) {
   return videoId;
 }
 
+interface YouTubeQueueInfo {
+  mainVideoId: string;
+  playlistId: string;
+  currentIndex: string | null;
+  baseUrl: string;
+}
+
 // Extract list of video IDs from a YouTube playlist URL
-function extractYouTubeQueueFromUrl(url) {
+function extractYouTubeQueueFromUrl(url: string): YouTubeQueueInfo | null {
   if (!url || !isYouTubeWatchUrl(url)) return null;
   
   try {
@@ -255,8 +225,17 @@ function extractYouTubeQueueFromUrl(url) {
   }
 }
 
+interface YouTubeQueueData {
+  tabId: number;
+  url: string;
+  baseUrl: string;
+  mainVideoId: string;
+  playlistId: string;
+  videos: YouTubeVideo[];
+}
+
 // Extract video queue information from YouTube tabs
-async function extractYouTubeQueueInfo(tab) {
+async function extractYouTubeQueueInfo(tab: chrome.tabs.Tab): Promise<YouTubeQueueData | null> {
   if (!tab || !tab.url || !isYouTubeWatchUrl(tab.url)) return null;
   
   // Get queue parameters from URL
@@ -278,7 +257,7 @@ async function extractYouTubeQueueInfo(tab) {
       target: { tabId: tab.id },
       func: () => {
         // This function runs in the context of the YouTube page
-        const videos = [];
+        const videos: Array<{videoId: string, title: string, url: string}> = [];
         
         try {
           // Try to find playlist items
@@ -289,12 +268,12 @@ async function extractYouTubeQueueInfo(tab) {
               const titleEl = item.querySelector('#video-title');
               const linkEl = item.querySelector('a#wc-endpoint');
               
-              if (titleEl && linkEl && titleEl.textContent) {
-                const title = titleEl.textContent.trim();
-                const url = linkEl instanceof HTMLAnchorElement ? linkEl.href : '';
+              if (titleEl && linkEl) {
+                const title = titleEl.textContent?.trim() || '';
+                const url = (linkEl as HTMLAnchorElement).href;
                 
                 // Extract video ID from URL
-                let videoId = null;
+                let videoId: string | null = null;
                 const match = url.match(/[?&]v=([^&]+)/);
                 if (match && match[1]) {
                   videoId = match[1];
@@ -322,7 +301,7 @@ async function extractYouTubeQueueInfo(tab) {
     if (results && results[0] && results[0].result) {
       const videos = results[0].result;
       return {
-        tabId: tab.id,
+        tabId: tab.id as number,
         url: tab.url,
         baseUrl: queueInfo.baseUrl,
         mainVideoId: queueInfo.mainVideoId,
@@ -330,7 +309,7 @@ async function extractYouTubeQueueInfo(tab) {
         videos: videos
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     // Common errors:
     // - "Cannot access contents of url "chrome://..." - restricted URL
     // - "No tab with id X" - tab was closed
@@ -346,7 +325,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     console.log('Tab updated:', tabId);
     
     // Check if this is a YouTube tab with a queue
-    if (isYouTubeWatchUrl(tab.url)) {
+    if (tab.url && isYouTubeWatchUrl(tab.url)) {
       // Try to extract queue information
       extractYouTubeQueueInfo(tab).then(queueData => {
         if (queueData && queueData.videos && queueData.videos.length > 0) {
@@ -363,7 +342,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
               timestamp: Date.now()
             };
             
-            chrome.storage.local.set({ youtubeQueues: youtubeQueues });
+            chrome.storage.local.set({ youtubeQueues });
           });
         }
       }).catch(error => {
@@ -374,8 +353,18 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
+interface GetTabsResponse {
+  tabs: chrome.tabs.Tab[];
+  error?: string;
+}
+
+interface RestoreQueueResponse {
+  success: boolean;
+  error?: string;
+}
+
 // Listen for messages from the popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse: (response: GetTabsResponse | RestoreQueueResponse) => void) => {
   if (request.action === 'getTabs') {
     try {
       chrome.tabs.query({}, (tabs) => {
@@ -391,39 +380,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                   if (tab && tab.url && isYouTubeWatchUrl(tab.url)) {
                     // First check if we have queue data for this specific tab
                     if (youtubeQueues[`tab-${tab.id}`]) {
-                      // @ts-ignore - We're extending the Tab object with our custom properties
-                      tab.youtubeQueue = youtubeQueues[`tab-${tab.id}`].videos;
+                      (tab as TabWithRelationship).youtubeQueue = youtubeQueues[`tab-${tab.id}`].videos;
                     }
                     // Otherwise, check if we have saved queue data for this URL
                     else {
                       const queueInfo = extractYouTubeQueueFromUrl(tab.url);
                       if (queueInfo && queueInfo.baseUrl && youtubeQueues[queueInfo.baseUrl]) {
-                        // @ts-ignore - We're extending the Tab object with our custom properties
-                        tab.youtubeQueue = youtubeQueues[queueInfo.baseUrl].videos;
-                        // @ts-ignore - We're extending the Tab object with our custom properties
-                        tab.hasRestoredQueue = true;
+                        (tab as TabWithRelationship).youtubeQueue = youtubeQueues[queueInfo.baseUrl].videos;
+                        (tab as TabWithRelationship).hasRestoredQueue = true;
                       }
                     }
                   }
                 } catch (tabError) {
-                  console.debug('Error processing tab data:', tabError.message);
+                  console.debug('Error processing tab data:', tabError);
                 }
               });
               
               sendResponse({ tabs });
             } catch (storageError) {
-              console.debug('Error processing storage data:', storageError.message);
+              console.debug('Error processing storage data:', storageError);
               sendResponse({ tabs: tabs || [] });
             }
           });
         } catch (queryError) {
-          console.debug('Error querying tabs:', queryError.message);
+          console.debug('Error querying tabs:', queryError);
           sendResponse({ tabs: [] });
         }
       });
     } catch (globalError) {
-      console.debug('Critical error in getTabs handler:', globalError.message);
-      sendResponse({ tabs: [], error: globalError.message });
+      console.debug('Critical error in getTabs handler:', globalError);
+      sendResponse({ tabs: [], error: String(globalError) });
     }
     return true; // Required for async sendResponse
   }
@@ -444,7 +430,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
           sendResponse({ success: true });
         });
-      } catch (error) {
+      } catch (error: any) {
         sendResponse({ 
           success: false, 
           error: error.message || 'Failed to update tab' 
@@ -455,6 +441,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     return true;
   }
+  
+  return false;
 });
 
 // Optional: Store tab history in local storage
@@ -491,10 +479,10 @@ chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
           tabHistory = tabHistory.slice(0, 100);
         }
         
-        chrome.storage.local.set({ tabHistory: tabHistory });
+        chrome.storage.local.set({ tabHistory });
       });
     } catch (error) {
-      console.debug('Error storing tab history:', error.message);
+      console.debug('Error storing tab history:', error);
     }
   });
 });
