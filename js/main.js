@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (newsletterForm) {
         newsletterForm.addEventListener('submit', handleNewsletterSubmit);
     }
+    
+    // Initialize theme toggle functionality
+    initThemeToggle();
 });
 
 /**
