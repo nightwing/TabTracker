@@ -1,0 +1,194 @@
+[
+  {
+    "id": 1,
+    "title": "The Silent Echo",
+    "summary": "A haunting tale of lost memories and found purpose, where a woman discovers her true identity through a series of mysterious letters from her forgotten past.",
+    "description": "In 'The Silent Echo,' acclaimed author delves into the fragile nature of memory and identity. When Eliza Morgan wakes up with no recollection of the past ten years, she discovers a series of letters written in her own hand, guiding her through the fragments of her forgotten life. As she follows the breadcrumbs of her past, she uncovers a truth more startling than she could have imagined—one that forces her to question everything she thought she knew about herself and the people closest to her. Set against the backdrop of a small coastal town shrouded in mist and secrets, this lyrical exploration of memory and identity will leave readers questioning the very nature of reality and the stories we tell ourselves to make sense of our lives.",
+    "publishDate": "October 15, 2022",
+    "category": "Literary Fiction",
+    "isbn": "978-1234567890",
+    "pages": 324,
+    "featured": true,
+    "purchaseLinks": {
+      "amazon": "#",
+      "barnesNoble": "#",
+      "indiebound": "#"
+    },
+    "reviews": [
+      {
+        "author": "The New York Times",
+        "source": "Book Review",
+        "rating": 5,
+        "text": "A mesmerizing exploration of memory and identity that lingers long after the final page."
+      },
+      {
+        "author": "James Roberts",
+        "source": "Literary Journal",
+        "rating": 4,
+        "text": "Hauntingly beautiful prose that weaves together past and present with remarkable skill."
+      },
+      {
+        "author": "Reader's Digest",
+        "source": "Monthly Picks",
+        "rating": 5,
+        "text": "One of the most thought-provoking novels of the year, examining the fragility of memory with compassion and insight."
+      }
+    ],
+    "excerpt": "<p>The first letter arrived on a Tuesday. Plain white envelope, my name written in what appeared to be my own handwriting. No return address.</p><p>I turned it over in my hands, that strange feeling of déjà vu washing over me again. Dr. Winters had said it would happen—moments where familiarity brushed against the edges of my consciousness, only to retreat before I could grasp it fully.</p><p>Ten years gone. A decade of memories erased in one night.</p><p>'It's unusual but not unheard of,' Dr. Winters had explained during one of our sessions. 'The mind protects itself in ways we don't fully understand.'</p><p>I slid my finger under the envelope flap, tearing it open with more force than necessary. Inside, a single sheet of paper, folded precisely into thirds.</p><p><em>Dear Eliza,</em></p><p><em>If you're reading this, then it's happened. You've forgotten. I'm sorry—both that you're experiencing this confusion and that I couldn't find another way. But I promise, there were reasons. Good ones.</em></p><p><em>I know you have questions. I have answers. But not all at once. Some truths need to be approached slowly, like entering cold water.</em></p><p><em>For now, know this: You are safe. You are loved. And nothing—not even forgetting—can change who you truly are.</em></p><p><em>Look for the box in the attic. The combination is the day we first arrived here. You'll know it when you think of it.</em></p><p><em>Trust yourself.</em></p><p><em>—E</em></p>"
+  },
+  {
+    "id": 2,
+    "title": "Whispers of the Tide",
+    "summary": "An evocative coastal drama that intertwines the lives of three generations of women as they confront family secrets revealed by a retreating shoreline.",
+    "description": "Set against the ever-changing shoreline of a small fishing village, 'Whispers of the Tide' explores the complex relationships between three generations of women in the Sullivan family. When rising sea levels threaten to uncover long-buried family secrets, matriarch Eleanor must finally confront the choices she made decades ago. Meanwhile, her daughter Catherine returns home after fifteen years away, bringing her own teenage daughter Harper, who discovers a weathered box of letters washed up by an unusually strong tide. As the sea claims more of their ancestral land, the three women must navigate their fractured relationships and come to terms with the secrets that have shaped their lives. Through lyrical prose and deeply realized characters, the novel examines how the places we call home shape our identities and how the past continues to wash over the present, leaving both destruction and possibility in its wake.",
+    "publishDate": "April 3, 2021",
+    "category": "Contemporary Fiction",
+    "isbn": "978-0987654321",
+    "pages": 368,
+    "featured": true,
+    "purchaseLinks": {
+      "amazon": "#",
+      "barnesNoble": "#",
+      "indiebound": "#"
+    },
+    "reviews": [
+      {
+        "author": "The Washington Post",
+        "source": "Book World",
+        "rating": 4,
+        "text": "A sweeping intergenerational saga that captures the essence of coastal life and the powerful bonds between mothers and daughters."
+      },
+      {
+        "author": "Sarah Johnson",
+        "source": "Bookist",
+        "rating": 5,
+        "text": "Emotionally resonant and beautifully crafted, with characters that feel as real as family."
+      }
+    ],
+    "excerpt": "<p>Eleanor watched as the waves inched closer to the foundation of the house than they had been yesterday, and closer than they would be tomorrow. The sea was reclaiming what had always been its own, and there was a certain poetry in that she could appreciate, even as it broke her heart.</p><p>'How bad is it?' Catherine asked, coming to stand beside her on the weathered porch. Even after fifteen years away, her daughter still knew how to move across the old wooden boards without making them creak.</p><p>'Three feet gone since spring,' Eleanor said, not taking her eyes off the horizon. 'Johnson's place down the way collapsed last month.'</p><p>Catherine said nothing for a long moment, and Eleanor wondered if her daughter was thinking about the property's value, or calculating how much time they had left, or if she was remembering how the beach used to stretch for another hundred yards when she was a child.</p><p>'Harper found something today,' Catherine finally said. 'Washed up on what's left of the beach.'</p><p>Eleanor felt her heart skip a beat. 'Oh?'</p><p>'A box. Metal. Rusted but intact. Filled with letters.'</p><p>And there it was. The moment Eleanor had been dreading for forty years, come at last on the tide her grandmother had always said carried both gifts and ghosts.</p><p>'I see,' was all she could manage.</p><p>'They're addressed to someone named Marianne.' Catherine's voice held a question she wasn't quite asking.</p><p>Eleanor nodded slowly, her eyes still on the water. 'My sister.'</p><p>'Your—' Catherine turned to face her. 'You never mentioned having a sister.'</p><p>'No,' Eleanor agreed. 'I never did.'</p>"
+  },
+  {
+    "id": 3,
+    "title": "Beyond the Vanishing Point",
+    "summary": "A gripping psychological thriller where a forensic psychologist must confront her own troubled past to solve a series of disappearances in a small mountain town.",
+    "description": "Dr. Maya Barrett, a renowned forensic psychologist, returns to her hometown of Blackridge after a series of strange disappearances mirror a traumatic case from her childhood. Twenty years ago, three children vanished without a trace, only to return a week later with no memory of where they'd been. Now, as history seems to be repeating itself, Maya must use her expertise to determine if there's a connection between the past and present cases, all while confronting the dark events that drove her away from Blackridge in the first place. As she delves deeper into the investigation, the line between memory and reality begins to blur, and Maya realizes that the truth may be more terrifying than she could have imagined. 'Beyond the Vanishing Point' is a taut psychological thriller that explores the fallibility of memory and the lengths we'll go to protect ourselves from unbearable truths.",
+    "publishDate": "January 12, 2023",
+    "category": "Psychological Thriller",
+    "isbn": "978-5432167890",
+    "pages": 402,
+    "featured": false,
+    "purchaseLinks": {
+      "amazon": "#",
+      "barnesNoble": "#",
+      "indiebound": "#"
+    },
+    "reviews": [
+      {
+        "author": "Publishers Weekly",
+        "source": "Starred Review",
+        "rating": 5,
+        "text": "A masterfully crafted psychological thriller that keeps readers guessing until the final shocking reveal."
+      },
+      {
+        "author": "Crime Fiction Lover",
+        "source": "Annual Review",
+        "rating": 4,
+        "text": "Complex characters and atmospheric tension make this a standout in the psychological thriller genre."
+      }
+    ],
+    "excerpt": "<p>'They all remember the same thing,' Sheriff Dawson said, sliding the three identical drawings across his desk. 'Or rather, they don't remember anything, but they all drew this.'</p><p>Maya studied the childish sketches—a jagged mountain silhouette with what appeared to be a doorway drawn into its center. No windows, no other features, just a simple rectangular opening in the mountain face. It could be anything. It could be nothing.</p><p>'Just like before,' she murmured.</p><p>Dawson nodded, the lines in his weathered face deepening. 'Just like before. Three kids gone for exactly seven days. No trace, no evidence of where they went. Then they reappear in the same spot they vanished from, physically unharmed but with no memory of the missing week.'</p><p>Maya closed her eyes briefly, trying to push away the memory of another sheriff's office, another set of drawings—her own among them.</p><p>'The same mountain?' she asked, already knowing the answer.</p><p>'Blackridge Peak. Just like in '03.'</p><p>Maya turned to look out the window where the peak in question loomed over the small town, its upper third obscured by low-hanging clouds. She'd spent twenty years avoiding this view, constructing a life and a career as far from Blackridge as possible. Yet here she was, pulled back by an unsettling sense of déjà vu and a case that had haunted her for decades.</p><p>'Have you considered the possibility,' she said carefully, 'that this is a copycat? Someone who knows what happened back then?'</p><p>Dawson leaned back in his chair, the ancient springs protesting loudly. 'Everyone knows what happened back then, Dr. Barrett. But no one knows what really happened. Not even you three kids who disappeared.'</p><p>Maya flinched at being called a kid, though that's what she'd been—thirteen years old when she and two other children went missing for a week. Seven days that remained a blank spot in her memory, despite years of therapy and her own professional training in recovering traumatic memories.</p><p>'Something's on that mountain,' she said finally, returning her gaze to the drawings. 'And I think it's time we found out what it is.'</p>"
+  },
+  {
+    "id": 4,
+    "title": "The Cartographer of Stars",
+    "summary": "A sweeping historical novel following a young female astronomer in 18th century France who must navigate scientific discovery, societal expectations, and forbidden love.",
+    "description": "Paris, 1774. At a time when women are expected to concern themselves with matters of the household rather than the cosmos, Céleste Boucher dreams of charting the stars. When her astronomer father falls ill, Céleste secretly continues his critical work mapping celestial movements, knowing that discovery could secure her family's legacy but also scandalize French society. Her careful plans are complicated by the arrival of James Harrington, a brilliant but arrogant English astronomer sent to verify her father's research. As Céleste and James navigate their initial antagonism and eventual collaboration, they make a discovery that could change their understanding of the heavens. But when revolution begins to simmer in the streets of Paris, Céleste must decide what she's willing to sacrifice for science, for love, and for her country. 'The Cartographer of Stars' is a meticulously researched historical novel that examines the untold stories of women in science against the dramatic backdrop of pre-revolutionary France.",
+    "publishDate": "September 5, 2022",
+    "category": "Historical Fiction",
+    "isbn": "978-8765432109",
+    "pages": 438,
+    "featured": false,
+    "purchaseLinks": {
+      "amazon": "#",
+      "barnesNoble": "#",
+      "indiebound": "#"
+    },
+    "reviews": [
+      {
+        "author": "Historical Novel Society",
+        "source": "Quarterly Review",
+        "rating": 5,
+        "text": "Impeccably researched and emotionally resonant, this novel illuminates the struggles of early female scientists with both historical accuracy and modern relevance."
+      },
+      {
+        "author": "Emma Thompson",
+        "source": "Literary Review",
+        "rating": 4,
+        "text": "A luminous tale of ambition and discovery that places a brilliant female mind at the center of scientific history."
+      }
+    ],
+    "excerpt": "<p>Céleste's fingers trembled as she adjusted the telescope, aligning it precisely with the coordinates she had calculated. Tonight was critical—if her calculations were correct, the comet would pass exactly where she predicted, validating months of work. If not...</p><p>She refused to consider failure. Too much depended on her being right.</p><p>The observatory dome was silent save for the occasional creak of the rotating roof as it settled. Her father, once a constant presence here, was confined to his bed two floors below, his brilliant mind now clouded by illness and age. The Royal Academy's deadline loomed mere weeks away—they needed his completed star charts or the family's royal stipend would be withdrawn.</p><p>Charts that Céleste had been secretly completing for the past year.</p><p>The door to the observatory creaked open, and Céleste straightened abruptly, pulling her father's coat more tightly around her shoulders. If it was one of her brothers, she could explain her presence easily enough—she was merely checking the instruments as Papa had taught her. If it was their housekeeper, Madame Blanc, there would be a lecture about proper hours for a young lady to be awake, but nothing more serious.</p><p>But the figure that stepped into the observatory was neither family nor servant.</p><p>'Mademoiselle Boucher, I presume?' The man's French was precise but marked by an unmistakable English accent. He stepped further into the light cast by her oil lamp, revealing an angular face, intelligent eyes, and the fine clothes of a gentleman. 'James Harrington, of the Royal Society of London. I was expected by your father.'</p><p>Céleste's heart sank. The Englishman was a week early. A week she desperately needed to complete her father's work—her work.</p><p>'Monsieur Harrington,' she managed with as much composure as she could gather. 'We did not expect you until next week.'</p><p>'Favorable winds,' he said simply, his gaze moving past her to the telescope. 'I see you share your father's interest in the heavens?'</p><p>There was a note of condescension in his voice that made Céleste's spine stiffen. 'I assist my father in his observations,' she said carefully.</p><p>'How diverting for you.' His smile didn't reach his eyes as he moved toward the desk where her calculations lay exposed. 'And where is the esteemed Claude Boucher this evening?'</p><p>Céleste stepped between the Englishman and her papers. 'My father is indisposed at present. I'm sure he will receive you tomorrow once he knows of your arrival.'</p><p>Harrington raised an eyebrow. 'Indisposed? The Royal Society will be most disappointed to hear that. They are quite eager for the verification of his comet predictions.'</p><p>'His predictions will be verified tonight,' Céleste said before she could stop herself. 'If you would care to observe.'</p><p>Interest flickered across the Englishman's face. 'His predictions? Or yours, mademoiselle?'</p><p>The question hung in the air between them, dangerous as a spark near gunpowder. Céleste felt the weight of her deception, of her father's reputation, of her family's future pressing down upon her. And underneath it all, the burning desire to be recognized for her own work, her own mind.</p><p>'The stars care not who maps their movements, monsieur,' she finally said. 'Only that they are mapped correctly.'</p>"
+  },
+  {
+    "id": 5,
+    "title": "The Garden of Lost Hours",
+    "summary": "A poignant story of love, loss, and redemption centered around an abandoned Victorian garden that brings together two people healing from different kinds of grief.",
+    "description": "When landscape architect Iris Reed is hired to restore an abandoned Victorian garden on a remote estate, she sees it as the perfect opportunity to escape her grief over her recently deceased husband. The garden, with its overgrown maze and crumbling statuary, was once famous for its design based on a 24-hour clock, with different flowers blooming at each hour of the day. As Iris works to bring the garden back to life, she discovers a series of letters buried beneath an old sundial, revealing the story of Eleanor Radcliffe, who created the garden in 1893 after the loss of her child. Meanwhile, the estate's reclusive owner, historian Daniel Holbrook, is wrestling with his own losses and the mysteries of his family's past. As the garden slowly reveals its secrets, Iris and Daniel find themselves drawn together by shared grief and the healing power of creating something beautiful from ruins. 'The Garden of Lost Hours' is a meditative exploration of how we measure time during periods of grief, and how growth and renewal can emerge from the darkest experiences.",
+    "publishDate": "May 17, 2021",
+    "category": "Contemporary Fiction",
+    "isbn": "978-2345678901",
+    "pages": 352,
+    "featured": false,
+    "purchaseLinks": {
+      "amazon": "#",
+      "barnesNoble": "#",
+      "indiebound": "#"
+    },
+    "reviews": [
+      {
+        "author": "Gardening Monthly",
+        "source": "Book Selections",
+        "rating": 5,
+        "text": "A beautifully crafted novel that will appeal to garden lovers and anyone who has experienced loss and found their way back to living."
+      },
+      {
+        "author": "Patricia Williams",
+        "source": "The Independent",
+        "rating": 4,
+        "text": "Lyrical prose and deeply realized characters make this a standout novel about healing and second chances."
+      }
+    ],
+    "excerpt": "<p>The garden was dying when Iris first saw it, which seemed appropriate given her state of mind. Death recognizing death. The thought was melodramatic, but Iris allowed it anyway as she pushed open the rusted gate and stepped inside what had once been one of England's most celebrated gardens.</p><p>Now it was a tangle of overgrowth and decay, nature reclaiming what had once been meticulously designed. Weeds thrust up through the cracked flagstones of the pathways. Ivy strangled what appeared to be a sundial in the center. The carefully planned beds—famous in Victorian gardening circles if her research was correct—now blurred into one another, botanical boundaries erased by neglect.</p><p>'It's been like this for years,' said the solicitor, Giles Hampton, who'd met her at the train station and driven her out to the estate. 'Mr. Holbrook's grandmother was the last one to maintain it properly, and she passed away in the eighties.'</p><p>Iris nodded, only half listening as she moved deeper into the space. Despite the ruin, she could sense the underlying structure, the skeleton of intention beneath the chaos. The garden had been designed in a perfect circle, she realized, with the pathways like the spokes of a wheel leading to the center where the sundial stood.</p><p>'The Garden of Hours, they called it,' Hampton continued, picking his way carefully behind her to avoid nettles. 'Designed to tell time through flowers. Different plants blooming at different hours of the day. Quite famous in its time, I understand.'</p><p><em>A garden that tells time</em>, Iris thought. How fitting that she should end up here, when time was exactly what she was trying to escape—the relentless forward motion of it, the way it kept carrying her away from Tom and the life they'd shared. At home, everything reminded her of time passing: the calendar where his medical appointments had been meticulously noted, now covered with sympathy card invitations and logistics of death; the watch he'd left on the nightstand, still ticking; the way people measured her grief in units of time as if there was a proper schedule for healing.</p><p><em>It's been six months, Iris. It might be time to consider returning to work.</em></p><p>And so she had, accepting this commission from a reclusive client she'd never met, on an estate she'd never seen, hundreds of miles from the home she and Tom had made together.</p><p>She stopped at the sundial, brushing away layers of ivy to reveal the worn inscription on its face: <em>Hours fly, Flowers die, New days, New ways, Pass by, Love stays.</em></p><p>'Mr. Holbrook mentioned you'll be staying in the east wing,' Hampton said, breaking into her thoughts. 'He's not one for company, I should warn you. Keeps to himself in the west wing and the library. You may go days without seeing him.'</p><p>'That suits me perfectly,' Iris replied, and meant it.</p><p>The less human contact, the better. She had come here to work, to lose herself in the restoration of something beautiful that had been broken. She would pour herself into this garden's rebirth and hope that in saving it, she might begin to save herself.</p><p>As Hampton turned to lead her back toward the main house, something caught Iris's eye—a flash of color amid the tangle of weeds around the sundial base. She knelt down, ignoring the dampness seeping through her jeans, and gently parted the vegetation.</p><p>There, improbably, impossibly, bloomed a single perfect poppy, its crimson petals luminous against the green chaos. According to her research, poppies had been planted to mark the eleventh hour in the original garden design.</p><p>Iris checked her watch. It was exactly eleven o'clock.</p>"
+  },
+  {
+    "id": 6,
+    "title": "The Frequency of Us",
+    "summary": "A speculative novel where a physicist discovers a way to communicate across parallel universes, raising profound questions about choice, destiny, and the roads not taken.",
+    "description": "Dr. Elinor Reid, a quantum physicist, has devoted her career to the study of parallel universes—a pursuit most of her colleagues consider theoretical at best. But when her laboratory equipment picks up an unexpected frequency during a routine experiment, Elinor discovers something extraordinary: a way to communicate with alternate versions of herself in parallel timelines. As she begins to exchange information with these other Elinors—each living a life that diverged from her own due to different choices made at critical moments—she becomes obsessed with the road not taken. Would she have been happier if she'd pursued music instead of science? If she'd chosen a different partner? If she'd had children? Meanwhile, in our timeline, Elinor's increasingly erratic behavior concerns her research partner and ex-husband, David, who fears she's having a breakdown. As the boundaries between universes begin to blur, Elinor must confront the consequences of her obsession with what might have been and decide which life—which version of herself—she truly wants. 'The Frequency of Us' is a thought-provoking exploration of quantum physics, choice, and the human longing to know what lies beyond the paths we've chosen.",
+    "publishDate": "March 8, 2022",
+    "category": "Science Fiction",
+    "isbn": "978-3456789012",
+    "pages": 384,
+    "featured": false,
+    "purchaseLinks": {
+      "amazon": "#",
+      "barnesNoble": "#",
+      "indiebound": "#"
+    },
+    "reviews": [
+      {
+        "author": "Science Fiction Today",
+        "source": "Annual Review",
+        "rating": 5,
+        "text": "A rare novel that combines scientific plausibility with deeply emotional storytelling about the universal human experience of wondering 'what if?'"
+      },
+      {
+        "author": "Physics World",
+        "source": "Media Review",
+        "rating": 4,
+        "text": "Though speculative, the quantum mechanics are handled with refreshing accuracy, serving the story without sacrificing scientific integrity."
+      }
+    ],
+    "excerpt": "<p>The first time Elinor heard herself speaking back from the machine, she assumed it was a recording error. Some kind of feedback loop or corrupted data file. She almost deleted it.</p><p>Thank God she didn't.</p><p>'Run it again,' she told her graduate assistant, Priya, who looked at her skeptically.</p><p>'Dr. Reid, we've already run it three times. It's just interference.'</p><p>'Humor me.'</p><p>Priya sighed but obediently reset the quantum receiver, adjusting the frequency to the exact specifications Elinor had calculated. The machine hummed to life, the sound vibrating through the basement laboratory at a pitch just on the edge of discomfort.</p><p>For thirty seconds, there was nothing but static.</p><p>Then, unmistakably: <em>'Hello? Is someone there? This is Dr. Elinor Reid.'</em></p><p>Priya's eyes widened. 'That's—that sounds like you.'</p><p>Elinor felt a chill run down her spine despite the warmth of the crowded lab. It did sound like her—but with subtle differences. The cadence was slightly off, the accent a touch more pronounced than Elinor's had been since graduate school in the States.</p><p>'Hello,' Elinor said into the receiver. 'This is also Dr. Elinor Reid. Who am I speaking with?'</p><p>Static crackled, and then: <em>'That's impossible. I'm Elinor Reid, professor of theoretical physics at Oxford University.'</em></p><p>Elinor's heart rate accelerated. 'I'm Elinor Reid, research physicist at MIT.'</p><p>A long pause, then: <em>'MIT? I was offered a position there. In 2010. I turned it down.'</em></p><p>Elinor gripped the edge of the lab bench. 2010. The year she'd broken her engagement to David and accepted the position at MIT instead of staying at Oxford with him.</p><p>'I accepted it,' she said quietly.</p><p>There was a burst of static, and for a moment Elinor thought they'd lost the connection. Then the other Elinor spoke again, her voice tight with emotion or perhaps just the strain of transmission across universal boundaries.</p><p><em>'My God. It worked. My calculations were correct.'</em> A sharp laugh came through the static. <em>'Do you know what this means?'</em></p><p>Elinor did. It meant that the multiverse theory was correct. That for every decision made, alternate universes split off, containing versions of reality where different choices were made, different paths taken.</p><p>It meant that somewhere—in the universe she was speaking to now—there existed an Elinor Reid who had stayed at Oxford. Who had, presumably, married David.</p><p>'Are you still with him?' Elinor asked before she could stop herself. 'With David?'</p><p>Another pause, longer this time. <em>'Yes. We have two children. Emily and James. You?'</em></p><p>'No,' Elinor said. 'We divorced after I took the MIT position. He couldn't forgive me for choosing career over family.' She hesitated. 'Are you happy?'</p><p>The question seemed to catch the other Elinor off guard. <em>'I... it's complicated. I love my family, but I've always wondered what would have happened if I'd taken that position. If I'd pursued the research you're obviously doing now.'</em> A staticky sigh. <em>'We always wonder about the roads not taken, don't we?'</em></p><p>The irony wasn't lost on Elinor. She'd spent the last decade building a successful career, publishing groundbreaking research, and establishing herself as a leader in her field. And yet, late at night, she still sometimes wondered what life with David might have been like. If choosing love over work would have made her happier.</p><p>Now she was literally confronting the path she hadn't taken.</p><p>'What if we could do more than wonder?' Elinor said slowly, an idea taking shape. 'What if we could experience it?'</p>"
+  }
+]

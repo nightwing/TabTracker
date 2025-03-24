@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse the complete collection of books and writings">
+    <title>Books & Writings | Writer's Portfolio</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Writer's Portfolio</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="books.html">Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="blog.html">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+                <form class="d-flex ms-2">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search-input">
+                    <button class="btn btn-outline-light" type="submit" id="search-button">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container h-100">
+            <div class="row h-100 align-items-center">
+                <div class="col-12 text-center">
+                    <h1 class="display-4">Books & Writings</h1>
+                    <p class="lead">Browse the complete collection</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Filters -->
+    <section class="py-3 bg-dark">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex flex-wrap justify-content-center" id="category-filters">
+                        <button class="btn btn-outline-light m-1 active" data-category="all">All</button>
+                        <!-- Categories will be added dynamically -->
+                        <div class="spinner-border text-light spinner-border-sm ms-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Books Grid -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row" id="books-grid">
+                <!-- Books will be loaded dynamically -->
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h5>Writer's Portfolio</h5>
+                    <p>A showcase of books, essays, and literary works.</p>
+                </div>
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h5>Connect</h5>
+                    <ul class="list-unstyled social-icons">
+                        <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                        <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fab fa-goodreads"></i> Goodreads</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="books.html">Books</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2023 Writer's Portfolio. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">Designed with <i class="fas fa-heart text-danger"></i> for literature</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Search Results Modal -->
+    <div class="modal fade" id="searchResultsModal" tabindex="-1" aria-labelledby="searchResultsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchResultsModalLabel">Search Results</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="search-results">
+                        <!-- Search results will be displayed here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/search.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let allBooks = [];
+            
+            // Fetch books data
+            fetch('data/books.json')
+                .then(response => response.json())
+                .then(data => {
+                    allBooks = data;
+                    
+                    // Extract unique categories
+                    const categories = [...new Set(data.map(book => book.category))];
+                    
+                    // Populate category filters
+                    const categoryFiltersHTML = categories.map(category => 
+                        `<button class="btn btn-outline-light m-1" data-category="${category}">${category}</button>`
+                    ).join('');
+                    
+                    // Replace the loading spinner with the category buttons
+                    document.getElementById('category-filters').innerHTML = 
+                        `<button class="btn btn-outline-light m-1 active" data-category="all">All</button>${categoryFiltersHTML}`;
+                    
+                    // Add event listeners to filter buttons
+                    document.querySelectorAll('#category-filters button').forEach(button => {
+                        button.addEventListener('click', function() {
+                            // Remove active class from all buttons
+                            document.querySelectorAll('#category-filters button').forEach(btn => {
+                                btn.classList.remove('active');
+                            });
+                            
+                            // Add active class to clicked button
+                            this.classList.add('active');
+                            
+                            // Get selected category
+                            const selectedCategory = this.getAttribute('data-category');
+                            
+                            // Filter books
+                            let filteredBooks = allBooks;
+                            if(selectedCategory !== 'all') {
+                                filteredBooks = allBooks.filter(book => book.category === selectedCategory);
+                            }
+                            
+                            // Display filtered books
+                            displayBooks(filteredBooks);
+                        });
+                    });
+                    
+                    // Display all books initially
+                    displayBooks(data);
+                })
+                .catch(error => {
+                    console.error('Error loading books data:', error);
+                    document.getElementById('books-grid').innerHTML = 
+                        '<div class="col-12 text-center"><p class="text-danger">Error loading books. Please try again later.</p></div>';
+                });
+            
+            function displayBooks(books) {
+                const booksGridHTML = books.map(book => `
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="book-cover mb-3">
+                                    <i class="fas fa-book fa-5x text-secondary"></i>
+                                </div>
+                                <h5 class="card-title">${book.title}</h5>
+                                <p class="card-text">${book.summary.substring(0, 100)}...</p>
+                                <p class="text-muted">
+                                    <small>Published: ${book.publishDate}</small><br>
+                                    <small>Category: ${book.category}</small>
+                                </p>
+                                <a href="book-detail.html?id=${book.id}" class="btn btn-outline-secondary">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('books-grid').innerHTML = booksGridHTML || 
+                    '<div class="col-12 text-center"><p>No books found in this category.</p></div>';
+            }
+        });
+    </script>
+</body>
+</html>

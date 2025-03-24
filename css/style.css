@@ -1,0 +1,257 @@
+/* Global Styles */
+:root {
+  --primary-font: 'Georgia', serif;
+  --secondary-font: 'Helvetica', Arial, sans-serif; 
+  --text-color: #f8f9fa;
+  --bg-color: #212529;
+  --accent-color: #6c757d;
+  --link-color: #adb5bd;
+  --transition-speed: 0.3s;
+  --spacing-unit: 8px;
+}
+
+body {
+  font-family: var(--primary-font);
+  line-height: 1.8;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  padding-top: 60px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--primary-font);
+  margin-bottom: var(--spacing-unit) * 2;
+}
+
+a {
+  color: var(--link-color);
+  transition: color var(--transition-speed);
+}
+
+a:hover {
+  color: var(--text-color);
+}
+
+/* Typography */
+.display-3, .display-4 {
+  font-weight: 700;
+}
+
+.lead {
+  font-family: var(--secondary-font);
+  line-height: 1.6;
+}
+
+/* Navigation */
+.navbar {
+  font-family: var(--secondary-font);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-family: var(--primary-font);
+  font-weight: bold;
+}
+
+/* Hero Section */
+.hero-section {
+  height: 90vh;
+  min-height: 500px;
+  background: linear-gradient(rgba(33, 37, 41, 0.7), rgba(33, 37, 41, 0.9)), 
+              url('https://source.unsplash.com/random/1600x900/?library,books') no-repeat center center;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  margin-top: -60px;
+}
+
+/* Page Headers */
+.page-header {
+  height: 40vh;
+  min-height: 300px;
+  background: linear-gradient(rgba(33, 37, 41, 0.7), rgba(33, 37, 41, 0.9)), 
+              url('https://source.unsplash.com/random/1600x900/?typewriter,writing') no-repeat center center;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  margin-top: -60px;
+}
+
+/* Book Covers */
+.book-cover, .book-cover-large {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #495057;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform var(--transition-speed);
+}
+
+.book-cover:hover, .book-cover-large:hover {
+  transform: scale(1.03);
+}
+
+.book-cover-large {
+  height: 350px;
+}
+
+/* Author Image */
+.author-image-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #343a40;
+  border-radius: 50%;
+  padding: 20px;
+}
+
+.author-image-small {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Blog Post */
+.blog-content {
+  font-size: 1.1rem;
+  line-height: 1.9;
+}
+
+.blog-content p {
+  margin-bottom: 1.5rem;
+}
+
+.blog-content blockquote {
+  border-left: 5px solid var(--accent-color);
+  padding-left: 20px;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+}
+
+/* Cards */
+.card {
+  transition: transform var(--transition-speed);
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Social Icons */
+.social-icons li {
+  margin-bottom: var(--spacing-unit);
+}
+
+.social-icons a {
+  text-decoration: none;
+}
+
+/* Footer */
+.footer {
+  background-color: #343a40;
+}
+
+.footer a {
+  text-decoration: none;
+}
+
+/* Contact Icons */
+.contact-icon {
+  display: inline-block;
+}
+
+/* Search */
+#search-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 767.98px) {
+  .hero-section {
+    height: 70vh;
+  }
+  
+  .page-header {
+    height: 30vh;
+  }
+  
+  .display-3 {
+    font-size: 2.5rem;
+  }
+  
+  .display-4 {
+    font-size: 2rem;
+  }
+}
+
+/* Book Detail Page */
+.book-purchase-links {
+  margin-top: 30px;
+}
+
+/* Blog Sidebar */
+.card-header {
+  background-color: #343a40;
+  border-bottom: 1px solid #495057;
+  font-family: var(--secondary-font);
+  font-weight: bold;
+}
+
+/* Comments */
+.comment-form {
+  background-color: #343a40;
+  padding: 20px;
+  border-radius: 4px;
+}
+
+/* Pagination */
+.pagination .page-link {
+  background-color: transparent;
+  border-color: var(--accent-color);
+  color: var(--text-color);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.pagination .page-link:hover {
+  background-color: #495057;
+  border-color: var(--accent-color);
+  color: var(--text-color);
+}
+
+/* Category Filters */
+#category-filters .btn {
+  margin-bottom: 5px;
+}
+
+/* Share Buttons */
+.share-button {
+  transition: background-color var(--transition-speed);
+}
+
+/* Custom Animations */
+.hover-grow {
+  transition: transform var(--transition-speed);
+}
+
+.hover-grow:hover {
+  transform: scale(1.05);
+}

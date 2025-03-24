@@ -1,0 +1,76 @@
+{
+  "name": "Emily Morgan",
+  "shortBio": "Emily Morgan is an award-winning novelist and essayist whose work explores the complexities of memory, identity, and human connection. Her books have been translated into fifteen languages.",
+  "fullBio": "<p>Emily Morgan is the author of six acclaimed novels, including the bestselling <em>The Silent Echo</em> and <em>Whispers of the Tide</em>. Her fiction has been recognized with the National Book Critics Circle Award, the PEN/Faulkner Award, and was twice a finalist for the Pulitzer Prize in Fiction.</p><p>Born and raised in a small coastal town in New England, Morgan developed an early love for storytelling, often creating elaborate tales for her three younger siblings. After earning her undergraduate degree in English Literature from Vassar College, she worked briefly in publishing before pursuing an MFA in Creative Writing from the Iowa Writers' Workshop.</p><p>Morgan's work is known for its lyrical prose, complex characters, and nuanced exploration of family dynamics. Her fiction often examines how the past continues to shape and inform the present, with particular attention to the ways memory—both personal and collective—can be simultaneously reliable and deceptive.</p><p>In addition to her novels, Morgan's essays and short stories have appeared in <em>The New Yorker</em>, <em>The Atlantic</em>, <em>Granta</em>, <em>The Paris Review</em>, and numerous other publications. She has taught creative writing at Columbia University, Smith College, and the Bread Loaf Writers' Conference.</p><p>When not writing or teaching, Morgan enjoys hiking, gardening, and exploring historic libraries. She currently lives in a converted farmhouse outside of Boston with her partner and their two rescue dogs.</p><p>Her forthcoming novel, <em>The Cartographer of Ghosts</em>, will be published in Spring 2024.</p>",
+  "journey": [
+    {
+      "year": "2003-2005",
+      "description": "Completed MFA at Iowa Writers' Workshop, where I began work on what would eventually become my first published novel."
+    },
+    {
+      "year": "2008",
+      "description": "Published debut novel 'Beneath Silent Waters' after 12 rejections. The book received the New Writers Award and was translated into three languages."
+    },
+    {
+      "year": "2010-2012",
+      "description": "Struggled with writer's block while working on my second novel. This challenging period ultimately led me to develop the daily writing practice I still maintain."
+    },
+    {
+      "year": "2013",
+      "description": "Released 'The Memory of Birds,' which became my breakthrough work, receiving the National Book Critics Circle Award and international recognition."
+    },
+    {
+      "year": "2015-Present",
+      "description": "Expanded into teaching creative writing while continuing to publish a novel approximately every two years. Began writing the blog to share insights from both my writing and teaching experiences."
+    }
+  ],
+  "influences": [
+    {
+      "author": "Virginia Woolf",
+      "description": "Woolf's stream-of-consciousness technique and her exploration of interior life transformed my understanding of what fiction could accomplish."
+    },
+    {
+      "author": "Gabriel García Márquez",
+      "description": "His blend of the magical and the mundane showed me how reality can be most truthfully portrayed through a lens that accommodates the extraordinary."
+    },
+    {
+      "author": "Toni Morrison",
+      "description": "Morrison's unflinching examination of difficult truths, combined with prose of extraordinary beauty, continues to inspire my approach to fiction."
+    },
+    {
+      "author": "James Baldwin",
+      "description": "Baldwin's precision with language and his ability to illuminate complex social realities through deeply personal narratives influences both my fiction and essays."
+    },
+    {
+      "author": "Marilynne Robinson",
+      "description": "Robinson's contemplative pace and philosophical depth reminds me of the power of quiet, reflective fiction in a noisy world."
+    }
+  ],
+  "awards": [
+    {
+      "name": "National Book Critics Circle Award",
+      "year": "2013",
+      "description": "For 'The Memory of Birds'"
+    },
+    {
+      "name": "PEN/Faulkner Award",
+      "year": "2018",
+      "description": "For 'Whispers of the Tide'"
+    },
+    {
+      "name": "Pulitzer Prize Finalist",
+      "year": "2013 & 2018",
+      "description": "For 'The Memory of Birds' and 'Whispers of the Tide'"
+    },
+    {
+      "name": "New Writers Award",
+      "year": "2008",
+      "description": "For 'Beneath Silent Waters'"
+    },
+    {
+      "name": "Guggenheim Fellowship",
+      "year": "2015",
+      "description": "For fiction writing"
+    }
+  ]
+}
