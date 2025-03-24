@@ -190,3 +190,79 @@ document.addEventListener('DOMContentLoaded', function() {
         element.classList.add('fade-in');
     });
 });
+
+/**
+ * Initialize theme toggle functionality
+ * This handles switching between light and dark mode
+ */
+function initThemeToggle() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const darkModeIcon = document.getElementById('dark-mode-icon');
+    const lightModeIcon = document.getElementById('light-mode-icon');
+    
+    if (!themeToggle) return;
+    
+    // Check for saved theme preference or use default
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+    
+    // Update icons based on current theme
+    updateThemeIcons(savedTheme);
+    
+    // Add click event to toggle button
+    themeToggle.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        setTheme(newTheme);
+        updateThemeIcons(newTheme);
+        
+        // Save user preference
+        localStorage.setItem('theme', newTheme);
+    });
+}
+
+/**
+ * Set the theme for the website
+ * @param {string} theme - The theme to set ('light' or 'dark')
+ */
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    
+    // Update button colors based on theme
+    const searchButton = document.getElementById('search-button');
+    if (searchButton) {
+        if (theme === 'light') {
+            searchButton.classList.replace('btn-outline-light', 'btn-outline-dark');
+        } else {
+            searchButton.classList.replace('btn-outline-dark', 'btn-outline-light');
+        }
+    }
+    
+    // Update newsletter button if it exists
+    const newsletterButton = document.querySelector('#newsletter-form button');
+    if (newsletterButton) {
+        if (theme === 'light') {
+            newsletterButton.classList.replace('btn-outline-light', 'btn-outline-dark');
+        } else {
+            newsletterButton.classList.replace('btn-outline-dark', 'btn-outline-light');
+        }
+    }
+}
+
+/**
+ * Update theme toggle icons based on current theme
+ * @param {string} theme - Current theme ('light' or 'dark')
+ */
+function updateThemeIcons(theme) {
+    const darkModeIcon = document.getElementById('dark-mode-icon');
+    const lightModeIcon = document.getElementById('light-mode-icon');
+    
+    if (theme === 'light') {
+        darkModeIcon.classList.add('d-none');
+        lightModeIcon.classList.remove('d-none');
+    } else {
+        darkModeIcon.classList.remove('d-none');
+        lightModeIcon.classList.add('d-none');
+    }
+}
