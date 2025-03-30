@@ -21,6 +21,9 @@ export default function GameControls2D() {
     console.log("Game controls initialized");
     
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Always log key presses for debugging
+      console.log(`Key pressed: "${e.key}" - Game state: ${gameState}`);
+      
       // Only respond to controls if the game is in playing state
       if (gameState !== GameState.PLAYING) {
         if (gameState === GameState.PAUSED && e.key === 'p') {
@@ -32,31 +35,39 @@ export default function GameControls2D() {
       switch (e.key) {
         case 'ArrowLeft':
         case 'a':
+          console.log("Moving left");
           moveLeft();
           break;
         case 'ArrowRight':
         case 'd':
+          console.log("Moving right");
           moveRight();
           break;
         case 'ArrowDown':
         case 's':
+          console.log("Moving down");
           moveDown();
           break;
         case 'ArrowUp':
         case 'w':
+          console.log("Rotating clockwise");
           rotateClockwise();
           break;
         case 'z':
         case 'q':
+          console.log("Rotating counter-clockwise");
           rotateCounterClockwise();
           break;
         case ' ':
+          console.log("Hard dropping");
           hardDrop();
           break;
         case 'p':
+          console.log("Pausing game");
           pauseGame();
           break;
         case 'r':
+          console.log("Restarting level");
           restartLevel();
           break;
         default:

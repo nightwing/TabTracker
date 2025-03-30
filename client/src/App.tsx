@@ -1,22 +1,48 @@
 import { useEffect, useState } from "react";
 import { useAudio } from "./lib/stores/useAudio";
 import { useTetrisGame } from "./lib/stores/useTetrisGame";
-import Game2D from "./components/game2d/Game2D";
+import WellRenderer from "./components/game/WellRenderer";
+import GameControls from "./components/game/GameControls";
+import GameUI from "./components/game/GameUI";
+import { Canvas } from "@react-three/fiber";
 import "@fontsource/inter";
 
 // Main App component
 function App() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const { startGame, gameState } = useTetrisGame();
 
   // Show the game once everything is loaded
   useEffect(() => {
     setIsLoaded(true);
-  }, []);
+    
+    // Auto-start the game with level 1
+    if (gameState === 'menu') {
+      console.log("Auto-starting game with level 1");
+      startGame(1);
+    }
+  }, [gameState, startGame]);
 
   return (
     <div className="w-full h-full bg-slate-900">
       {isLoaded && (
-        <Game2D />
+        <div className="w-full h-full relative">
+          {/* 3D Canvas */}
+          <div className="absolute inset-0">
+            <Canvas
+              camera={{ position: [0, 0, 25], fov: 40 }}
+              shadows
+            >
+              <WellRenderer />
+            </Canvas>
+          </div>
+          
+          {/* Game UI overlay */}
+          <GameUI />
+          
+          {/* Game controls (keyboard handling) */}
+          <GameControls />
+        </div>
       )}
     </div>
   );

@@ -1,11 +1,10 @@
 import { useThree, useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import { useTetrisGame } from "@/lib/stores/useTetrisGame";
-import { GridType } from "@/lib/constants";
+import { useTetrisGame } from "../../lib/stores/useTetrisGame";
+import { GridType } from "../../lib/constants";
 import SquareGrid from "./SquareGrid";
 import HexGrid from "./HexGrid";
 import TriangleGrid from "./TriangleGrid";
-import GameControls from "./GameControls";
 import * as THREE from "three";
 
 export default function WellRenderer() {
@@ -95,14 +94,19 @@ export default function WellRenderer() {
   
   return (
     <>
-      {/* Game controls handler */}
-      <GameControls />
-      
       {/* The grid renderer */}
       {renderGrid()}
       
       {/* Environment lighting */}
       <hemisphereLight intensity={0.2} color="#eaeaea" groundColor="#080820" />
+      <ambientLight intensity={0.3} />
+      <directionalLight 
+        position={[5, 10, 5]} 
+        intensity={0.8} 
+        castShadow 
+        shadow-mapSize-width={2048} 
+        shadow-mapSize-height={2048} 
+      />
     </>
   );
 }

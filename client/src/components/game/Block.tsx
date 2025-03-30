@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Box, Sphere } from "@react-three/drei";
 import { useFrame, ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
-import { BLOCK_COLORS } from "@/lib/constants";
+import { BLOCK_COLORS } from "../../lib/constants";
 
 interface BlockProps {
   position: [number, number, number];

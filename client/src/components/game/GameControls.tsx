@@ -1,12 +1,9 @@
-import { useEffect, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import { useKeyboardControls } from "@react-three/drei";
-import { useTetrisGame } from "@/lib/stores/useTetrisGame";
-import { GameState, INITIAL_DROP_TIME } from "@/lib/constants";
+import { useEffect } from "react";
+import { useTetrisGame } from "../../lib/stores/useTetrisGame";
+import { GameState } from "../../lib/constants";
 
 // Game controls handler component
 export default function GameControls() {
-  const [subscribeKeys, getKeys] = useKeyboardControls();
   const { 
     gameState, 
     tick, 
@@ -22,128 +19,101 @@ export default function GameControls() {
     dropTime 
   } = useTetrisGame();
   
-  // For drop timing
-  const lastDropTime = useRef(0);
-  
-  // For continuous movement (when holding down a key)
-  const moveLeftInterval = useRef<number | null>(null);
-  const moveRightInterval = useRef<number | null>(null);
-  const moveDownInterval = useRef<number | null>(null);
-  const lastMoveHorizontalTime = useRef(0);
-  
-  // Subscribe to keyboard events
+  // Set up game tick and keyboard controls
   useEffect(() => {
-    // Listen for key presses for one-time actions (rotate, hard drop)
-    const rotateClockwiseUnsubscribe = subscribeKeys(
-      (state) => state.rotateClockwise,
-      (pressed) => {
-        if (pressed && gameState === GameState.PLAYING) {
-          rotateClockwise();
-        }
-      }
-    );
-    
-    const rotateCounterClockwiseUnsubscribe = subscribeKeys(
-      (state) => state.rotateCounterClockwise,
-      (pressed) => {
-        if (pressed && gameState === GameState.PLAYING) {
-          rotateCounterClockwise();
-        }
-      }
-    );
-    
-    const hardDropUnsubscribe = subscribeKeys(
-      (state) => state.hardDrop,
-      (pressed) => {
-        if (pressed && gameState === GameState.PLAYING) {
-          hardDrop();
-        }
-      }
-    );
-    
-    const pauseUnsubscribe = subscribeKeys(
-      (state) => state.pause,
-      (pressed) => {
-        if (pressed) {
-          if (gameState === GameState.PLAYING) {
-            pauseGame();
-          } else if (gameState === GameState.PAUSED) {
-            resumeGame();
-          }
-        }
-      }
-    );
-    
-    const restartUnsubscribe = subscribeKeys(
-      (state) => state.restart,
-      (pressed) => {
-        if (pressed && (gameState === GameState.GAME_OVER || gameState === GameState.PAUSED)) {
-          restartLevel();
-        }
-      }
-    );
-    
     // Add logging for debugging
-    console.log("Game controls initialized");
+    console.log("3D Game controls initialized");
+    
+    // Set up auto drop timer
+    let lastTickTime = performance.now();
+    const gameInterval = setInterval(() => {
+      if (gameState === GameState.PLAYING) {
+        const now = performance.now();
+        
+        // Check if enough time has passed for a game tick
+        if (now - lastTickTime >= dropTime) {
+          lastTickTime = now;
+          tick();
+        }
+      }
+    }, 50); // Check frequently to make timing more accurate
+    
+    // Handle keyboard controls
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Always log key presses for debugging
+      console.log(`Key pressed: "${e.key}" - Game state: ${gameState}`);
+      
+      // Only respond to controls if the game is in playing state
+      if (gameState !== GameState.PLAYING) {
+        if (gameState === GameState.PAUSED && e.key === 'p') {
+          resumeGame();
+        }
+        return;
+      }
+      
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'a':
+          console.log("Moving left");
+          moveLeft();
+          break;
+        case 'ArrowRight':
+        case 'd':
+          console.log("Moving right");
+          moveRight();
+          break;
+        case 'ArrowDown':
+        case 's':
+          console.log("Moving down");
+          moveDown();
+          break;
+        case 'ArrowUp':
+        case 'w':
+          console.log("Rotating clockwise");
+          rotateClockwise();
+          break;
+        case 'z':
+        case 'q':
+          console.log("Rotating counter-clockwise");
+          rotateCounterClockwise();
+          break;
+        case ' ':
+          console.log("Hard dropping");
+          hardDrop();
+          break;
+        case 'p':
+          console.log("Pausing game");
+          pauseGame();
+          break;
+        case 'r':
+          console.log("Restarting level");
+          restartLevel();
+          break;
+        default:
+          break;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
     
     return () => {
-      rotateClockwiseUnsubscribe();
-      rotateCounterClockwiseUnsubscribe();
-      hardDropUnsubscribe();
-      pauseUnsubscribe();
-      restartUnsubscribe();
-      
-      // Clear any intervals
-      if (moveLeftInterval.current) clearInterval(moveLeftInterval.current);
-      if (moveRightInterval.current) clearInterval(moveRightInterval.current);
-      if (moveDownInterval.current) clearInterval(moveDownInterval.current);
+      window.removeEventListener('keydown', handleKeyDown);
+      clearInterval(gameInterval);
     };
   }, [
-    subscribeKeys, 
     gameState, 
+    moveLeft, 
+    moveRight, 
     rotateClockwise, 
     rotateCounterClockwise, 
+    moveDown, 
     hardDrop, 
-    pauseGame, 
-    resumeGame, 
-    restartLevel
+    pauseGame,
+    resumeGame,
+    restartLevel,
+    tick,
+    dropTime
   ]);
-  
-  // Handle continuous movement in the game loop
-  useFrame((state) => {
-    if (gameState !== GameState.PLAYING) return;
-    
-    const { clock } = state;
-    const keys = getKeys();
-    
-    // Handle automatic drop based on level speed
-    if (clock.elapsedTime - lastDropTime.current > dropTime / 1000) {
-      lastDropTime.current = clock.elapsedTime;
-      tick();
-    }
-    
-    // Handle horizontal movement (with delay between movements)
-    const moveRepeatDelay = 0.1; // seconds
-    
-    if (clock.elapsedTime - lastMoveHorizontalTime.current > moveRepeatDelay) {
-      if (keys.moveLeft) {
-        moveLeft();
-        lastMoveHorizontalTime.current = clock.elapsedTime;
-      } else if (keys.moveRight) {
-        moveRight();
-        lastMoveHorizontalTime.current = clock.elapsedTime;
-      }
-    }
-    
-    // Handle soft drop (move down faster)
-    if (keys.moveDown) {
-      // Increase drop speed when holding down
-      if (clock.elapsedTime - lastDropTime.current > dropTime / 5000) {
-        lastDropTime.current = clock.elapsedTime;
-        moveDown();
-      }
-    }
-  });
   
   return null; // This component doesn't render anything
 }

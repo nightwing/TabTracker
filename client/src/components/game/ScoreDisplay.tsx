@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { gridTypeToDisplayName } from "@/lib/gameHelpers";
-import { useTetrisGame } from "@/lib/stores/useTetrisGame";
-import { useAudio } from "@/lib/stores/useAudio";
-import { Button } from "@/components/ui/button";
-import { GameState } from "@/lib/constants";
+import { Badge } from "../../components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { gridTypeToDisplayName } from "../../lib/gameHelpers";
+import { useTetrisGame } from "../../lib/stores/useTetrisGame";
+import { useAudio } from "../../lib/stores/useAudio";
+import { Button } from "../../components/ui/button";
+import { GameState } from "../../lib/constants";
 import { 
   TrophyIcon, 
   LayersIcon, 

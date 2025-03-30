@@ -1,9 +1,9 @@
 import { useRef } from "react";
-import { Matrix } from "@/lib/tetrominos";
-import { BLOCK_COLORS, GRID_HEX_SIZE, HEX_WELL_HEIGHT, HEX_WELL_WIDTH } from "@/lib/constants";
-import { Position, gridToWorld } from "@/lib/gridUtils";
-import { GridType } from "@/lib/constants";
-import { useTetrisGame } from "@/lib/stores/useTetrisGame";
+import { Matrix } from "../../lib/tetrominos";
+import { BLOCK_COLORS, GRID_HEX_SIZE, HEX_WELL_HEIGHT, HEX_WELL_WIDTH } from "../../lib/constants";
+import { Position, gridToWorld } from "../../lib/gridUtils";
+import { GridType } from "../../lib/constants";
+import { useTetrisGame } from "../../lib/stores/useTetrisGame";
 import * as THREE from "three";
 
 interface HexGridProps {

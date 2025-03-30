@@ -1,10 +1,10 @@
 import { useRef } from "react";
-import { Matrix } from "@/lib/tetrominos";
-import { BLOCK_COLORS, GRID_SQUARE_SIZE, SQUARE_WELL_HEIGHT, SQUARE_WELL_WIDTH } from "@/lib/constants";
+import { Matrix } from "../../lib/tetrominos";
+import { BLOCK_COLORS, GRID_SQUARE_SIZE, SQUARE_WELL_HEIGHT, SQUARE_WELL_WIDTH } from "../../lib/constants";
 import Block from "./Block";
-import { Position, gridToWorld } from "@/lib/gridUtils";
-import { GridType } from "@/lib/constants";
-import { useTetrisGame } from "@/lib/stores/useTetrisGame";
+import { Position, gridToWorld } from "../../lib/gridUtils";
+import { GridType } from "../../lib/constants";
+import { useTetrisGame } from "../../lib/stores/useTetrisGame";
 import * as THREE from "three";
 
 interface SquareGridProps {

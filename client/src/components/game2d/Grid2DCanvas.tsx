@@ -422,19 +422,32 @@ export default function Grid2DCanvas({ width, height }: Grid2DCanvasProps) {
     canvas.width = width;
     canvas.height = height;
     
-    // Start the render loop
-    const animationFrame = requestAnimationFrame(renderGame);
+    // Log initial game state
+    console.log("Canvas initialized with:", {
+      tetromino,
+      position,
+      matrix,
+      gridType,
+      wellWidth,
+      wellHeight
+    });
     
-    // Cleanup
-    return () => {
-      cancelAnimationFrame(animationFrame);
-    };
+    // Start the render loop immediately
+    renderGame();
+    
+    // No cleanup needed
   }, [width, height]);
   
-  // Update when game state changes
+  // Update when game state changes - call renderGame to refresh canvas
   useEffect(() => {
-    // This is just a dependency array to trigger re-renders
-    // The actual rendering happens in renderGame()
+    console.log("Game state changed, re-rendering:", {
+      tetromino: tetromino?.type,
+      position,
+      matrixSize: matrix.length > 0 ? `${matrix.length}x${matrix[0].length}` : "empty"
+    });
+    
+    // Request a new frame to render the updated game state
+    requestAnimationFrame(renderGame);
   }, [matrix, tetromino, position, gridType, wellWidth, wellHeight, currentLevelData.wellShape]);
   
   return (

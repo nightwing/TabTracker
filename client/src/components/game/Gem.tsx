@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Sphere } from "@react-three/drei";
 import * as THREE from "three";
-import { BLOCK_COLORS } from "@/lib/constants";
+import { BLOCK_COLORS } from "../../lib/constants";
 
 interface GemProps {
   position: [number, number, number];
