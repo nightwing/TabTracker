@@ -30,10 +30,18 @@ function App() {
           {/* 3D Canvas */}
           <div className="absolute inset-0">
             <Canvas
-              camera={{ position: [0, 0, 25], fov: 40 }}
+              camera={{ 
+                position: [0, 5, 40],
+                zoom: 30,
+                up: [0, 0, 1]
+              }}
               shadows
+              flat
+              orthographic
             >
               <WellRenderer />
+              {/* Add ambient light for flat, even lighting */}
+              <ambientLight intensity={0.8} />
             </Canvas>
           </div>
           

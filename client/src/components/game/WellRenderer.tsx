@@ -20,41 +20,15 @@ export default function WellRenderer() {
   const { camera } = useThree();
   const cameraRef = useRef<THREE.Camera>(camera);
   
-  // Set up camera position based on grid type
+  // We'll skip adjusting the camera position here since we've set it as orthographic in App.tsx
   useEffect(() => {
-    if (!cameraRef.current) return;
-    
-    // Adjust camera position based on grid type
-    switch (gridType) {
-      case GridType.SQUARE:
-        cameraRef.current.position.set(0, 4, 8);
-        break;
-      case GridType.HEXAGONAL:
-        cameraRef.current.position.set(0, 5, 12);
-        break;
-      case GridType.TRIANGULAR:
-        cameraRef.current.position.set(0, 5, 12);
-        break;
-    }
-    
+    // We're now using a fixed orthographic camera configured in App.tsx
+    // No need to adjust the camera position here
   }, [gridType]);
   
-  // Add subtle camera movement
-  useFrame((state) => {
-    const { clock } = state;
-    
-    if (!cameraRef.current) return;
-    
-    // Subtle camera movement
-    const cameraX = Math.sin(clock.elapsedTime * 0.2) * 0.5;
-    const cameraY = Math.sin(clock.elapsedTime * 0.1) * 0.2 + 4;
-    
-    // Update camera position with lerping for smoothness
-    cameraRef.current.position.x += (cameraX - cameraRef.current.position.x) * 0.05;
-    cameraRef.current.position.y += (cameraY - cameraRef.current.position.y) * 0.05;
-    
-    // Always look at center of well
-    cameraRef.current.lookAt(0, 0, 0);
+  // Skip the camera movement for a flat, stable view
+  useFrame(() => {
+    // No camera animation for the flat perspective
   });
   
   // Render the appropriate grid type
@@ -97,15 +71,24 @@ export default function WellRenderer() {
       {/* The grid renderer */}
       {renderGrid()}
       
-      {/* Environment lighting */}
-      <hemisphereLight intensity={0.2} color="#eaeaea" groundColor="#080820" />
-      <ambientLight intensity={0.3} />
+      {/* Environment lighting optimized for flat view */}
+      <ambientLight intensity={0.6} />
       <directionalLight 
-        position={[5, 10, 5]} 
-        intensity={0.8} 
+        position={[0, 20, 10]} 
+        intensity={0.7} 
         castShadow 
         shadow-mapSize-width={2048} 
-        shadow-mapSize-height={2048} 
+        shadow-mapSize-height={2048}
+        shadow-camera-far={50}
+        shadow-camera-top={20}
+        shadow-camera-bottom={-20}
+        shadow-camera-left={-20}
+        shadow-camera-right={20}
+      />
+      {/* Add a second directional light from opposite direction to reduce harsh shadows */}
+      <directionalLight 
+        position={[0, 5, -10]} 
+        intensity={0.3} 
       />
     </>
   );
