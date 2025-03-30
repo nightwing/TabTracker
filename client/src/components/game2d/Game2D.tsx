@@ -8,26 +8,53 @@ import { GameState } from '../../lib/constants';
 
 export default function Game2D() {
   const gameContainerRef = useRef<HTMLDivElement>(null);
-  const { tick, gameState } = useTetrisGame();
+  const { tick, gameState, dropTime, startGame } = useTetrisGame();
   const { backgroundMusic, isMuted } = useAudio();
   
-  // Set up the game loop
+  // Set up the game loop with requestAnimationFrame for smoother animation
   useEffect(() => {
-    let gameLoopId: number;
+    let lastTime = 0;
+    let elapsed = 0;
+    let animationFrameId: number;
+    
+    const gameLoop = (timestamp: number) => {
+      if (!lastTime) lastTime = timestamp;
+      const deltaTime = timestamp - lastTime;
+      lastTime = timestamp;
+      
+      elapsed += deltaTime;
+      
+      // Only process game logic at intervals specified by dropTime
+      if (elapsed > dropTime) {
+        console.log("Game tick at", timestamp, "ms, dropTime:", dropTime);
+        tick();
+        elapsed = 0;
+      }
+      
+      // Continue the loop
+      animationFrameId = requestAnimationFrame(gameLoop);
+    };
     
     // Only run the game loop if the game is in playing state
     if (gameState === GameState.PLAYING) {
-      gameLoopId = window.setInterval(() => {
-        tick();
-      }, 1000); // The actual interval is adjusted by dropTime in the store
+      console.log("Starting game loop with dropTime:", dropTime);
+      animationFrameId = requestAnimationFrame(gameLoop);
     }
     
     return () => {
-      if (gameLoopId) {
-        window.clearInterval(gameLoopId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [gameState, tick]);
+  }, [gameState, tick, dropTime]);
+  
+  // Start game when component mounts if not already started
+  useEffect(() => {
+    if (gameState === GameState.MENU) {
+      // Start with the first level
+      startGame(1);
+    }
+  }, [gameState, startGame]);
   
   // Start/stop background music based on game state
   useEffect(() => {
