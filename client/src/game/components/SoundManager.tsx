@@ -23,6 +23,31 @@ export function SoundManager() {
       const successSound = new Audio('/sounds/success.mp3');
       successSound.volume = 0.5;
       useAudio.getState().setSuccessSound(successSound);
+      
+      // Load special effect sounds
+      const powerupSound = new Audio('/sounds/powerup.mp3');
+      powerupSound.volume = 0.4;
+      useAudio.getState().setPowerupSound(powerupSound);
+      
+      const portalSound = new Audio('/sounds/portal.mp3');
+      portalSound.volume = 0.5;
+      useAudio.getState().setPortalSound(portalSound);
+      
+      const bounceSound = new Audio('/sounds/bounce.mp3');
+      bounceSound.volume = 0.3;
+      useAudio.getState().setBounceSound(bounceSound);
+      
+      const gravitySound = new Audio('/sounds/gravity.mp3');
+      gravitySound.volume = 0.4;
+      useAudio.getState().setGravitySound(gravitySound);
+      
+      const gemSound = new Audio('/sounds/gem.mp3');
+      gemSound.volume = 0.6;
+      useAudio.getState().setGemSound(gemSound);
+      
+      const explosionSound = new Audio('/sounds/explosion.mp3');
+      explosionSound.volume = 0.5;
+      useAudio.getState().setExplosionSound(explosionSound);
     }
     
     // Play background music if not muted

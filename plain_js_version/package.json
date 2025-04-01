@@ -1,0 +1,12 @@
+{
+  "name": "deep-tetris-plain-js",
+  "version": "1.0.0",
+  "description": "A Tetris-like game with extended grid and multiple layouts (Plain JS version)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

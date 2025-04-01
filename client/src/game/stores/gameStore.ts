@@ -33,6 +33,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
   paused: false,
   fallingSpeed: 1,
   viewportPosition: 0,
+  
+  // Special states for powerups and special cells
+  gravityFlipped: false,
+  gemFinderActive: false,
+  gemFinderDuration: 0,
+  gemPosition: undefined,
+  ghostModeActive: false,
+  extraPiece: undefined,
+  portalActiveCooldown: 0,
+  bouncyCollisionCount: 0,
+  
+  // Special effects callback
+  onSpecialEffectActivate: undefined,
 
   initializeGame: (levelId: number) => {
     const level = getLevelById(levelId);
@@ -57,7 +70,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
       gameOver: false,
       paused: false,
       fallingSpeed: 1 + (level.difficulty * 0.2),
-      viewportPosition: 0
+      viewportPosition: 0,
+      
+      // Reset all special states
+      gravityFlipped: false,
+      gemFinderActive: false,
+      gemFinderDuration: 0,
+      gemPosition: level.gemPosition,
+      ghostModeActive: false,
+      extraPiece: undefined,
+      portalActiveCooldown: 0,
+      bouncyCollisionCount: 0
     });
   },
 
@@ -82,19 +105,196 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   moveDown: () => {
-    const { piecePosition, currentPiece, grid, paused } = get();
+    const { piecePosition, currentPiece, grid, paused, ghostModeActive, gravityFlipped, onSpecialEffectActivate } = get();
     if (!currentPiece || paused || get().gameOver) return;
 
-    const newPosition = { ...piecePosition, y: piecePosition.y + 1 };
-    if (!checkCollision(grid, currentPiece, newPosition)) {
+    // Handle gravity flipping
+    const direction = gravityFlipped ? -1 : 1;
+    const newPosition = { ...piecePosition, y: piecePosition.y + direction };
+
+    // Check for special cell collisions
+    const hasCollision = !ghostModeActive && checkCollision(grid, currentPiece, newPosition);
+    
+    if (!hasCollision) {
+      // If no collision, just move the piece
       set({ piecePosition: newPosition });
+      
+      // Check if we're colliding with any special cells
+      currentPiece.shape.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+          if (cell) {
+            const gridX = newPosition.x + colIndex;
+            const gridY = newPosition.y + rowIndex;
+            
+            // Make sure we're in grid bounds
+            if (gridY >= 0 && gridY < grid.length && gridX >= 0 && gridX < grid[0].length) {
+              const gridCell = grid[gridY][gridX];
+              
+              // Handle portal cells
+              if (gridCell.type === CellType.PORTAL && gridCell.portalId && !gridCell.isExit) {
+                // Find the exit portal
+                const portalCooldown = get().portalActiveCooldown;
+                if (portalCooldown <= 0) {
+                  for (let y = 0; y < grid.length; y++) {
+                    for (let x = 0; x < grid[y].length; x++) {
+                      const cell = grid[y][x];
+                      if (cell.type === CellType.PORTAL && 
+                          cell.portalId === gridCell.portalId && 
+                          cell.isExit) {
+                        // Teleport the piece to the exit
+                        set({ 
+                          piecePosition: { x: x - colIndex, y: y - rowIndex },
+                          portalActiveCooldown: 10 // Add cooldown to prevent immediate re-entry
+                        });
+                        if (onSpecialEffectActivate) {
+                          onSpecialEffectActivate('portal', { 
+                            fromX: gridX, 
+                            fromY: gridY,
+                            toX: x,
+                            toY: y
+                          });
+                        }
+                        return;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              // Handle magnetic cells that attract the piece
+              else if (gridCell.type === CellType.MAGNETIC && gridCell.magneticStrength) {
+                const strength = gridCell.magneticStrength / 10; // Scale down the effect
+                const pullX = gridX - (newPosition.x + currentPiece.shape[0].length / 2);
+                const pullDirection = pullX > 0 ? 1 : -1;
+                
+                // Apply magnetic pull based on strength
+                if (Math.random() < strength) {
+                  const magneticPosition = { 
+                    ...newPosition, 
+                    x: newPosition.x + pullDirection
+                  };
+                  
+                  // Only move if it doesn't cause collision
+                  if (!checkCollision(grid, currentPiece, magneticPosition)) {
+                    set({ piecePosition: magneticPosition });
+                    if (onSpecialEffectActivate) {
+                      onSpecialEffectActivate('magnetic', { 
+                        strength: gridCell.magneticStrength,
+                        direction: pullDirection
+                      });
+                    }
+                  }
+                }
+              }
+              
+              // Handle gravity cells
+              else if (gridCell.type === CellType.GRAVITY && gridCell.gravityDirection) {
+                let gravityPosition = { ...newPosition };
+                
+                switch(gridCell.gravityDirection) {
+                  case 'up':
+                    gravityPosition.y -= 1;
+                    break;
+                  case 'down':
+                    gravityPosition.y += 1;
+                    break;
+                  case 'left':
+                    gravityPosition.x -= 1;
+                    break;
+                  case 'right':
+                    gravityPosition.x += 1;
+                    break;
+                }
+                
+                // Only apply if it doesn't cause collision
+                if (!checkCollision(grid, currentPiece, gravityPosition)) {
+                  set({ piecePosition: gravityPosition });
+                  if (onSpecialEffectActivate) {
+                    onSpecialEffectActivate('gravity', { direction: gridCell.gravityDirection });
+                  }
+                }
+              }
+              
+              // Handle scramble cells
+              else if (gridCell.type === CellType.SCRAMBLE && gridCell.scrambleRotations) {
+                // Rotate the piece randomly
+                let rotated = { ...currentPiece };
+                
+                // Apply multiple rotations
+                for (let i = 0; i < gridCell.scrambleRotations; i++) {
+                  rotated.shape = rotated.shape[0].map((_, i) => 
+                    rotated.shape.map(row => row[i]).reverse()
+                  );
+                }
+                
+                // Only apply if it doesn't cause collision
+                if (!checkCollision(grid, rotated, newPosition)) {
+                  set({ currentPiece: rotated });
+                  if (onSpecialEffectActivate) {
+                    onSpecialEffectActivate('scramble', { rotations: gridCell.scrambleRotations });
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
+      
+      // Reduce portal cooldown
+      if (get().portalActiveCooldown > 0) {
+        set(state => ({ portalActiveCooldown: state.portalActiveCooldown - 1 }));
+      }
     } else {
+      // Check for bouncy cells before locking the piece
+      let isBouncy = false;
+      
+      currentPiece.shape.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+          if (cell) {
+            const gridX = piecePosition.x + colIndex;
+            const gridY = piecePosition.y + rowIndex + 1; // Check one row below
+            
+            if (gridY < grid.length && gridX >= 0 && gridX < grid[0].length) {
+              if (grid[gridY][gridX].type === CellType.BOUNCY) {
+                isBouncy = true;
+              }
+            }
+          }
+        });
+      });
+      
+      if (isBouncy) {
+        // Bounce the piece upward
+        const bouncePosition = { ...piecePosition, y: piecePosition.y - 1 };
+        if (!checkCollision(grid, currentPiece, bouncePosition)) {
+          set({ 
+            piecePosition: bouncePosition,
+            bouncyCollisionCount: get().bouncyCollisionCount + 1
+          });
+          
+          if (onSpecialEffectActivate) {
+            onSpecialEffectActivate('bouncy', { count: get().bouncyCollisionCount });
+          }
+          
+          // After too many bounces, lock the piece anyway
+          if (get().bouncyCollisionCount > 3) {
+            set({ bouncyCollisionCount: 0 });
+            // Continue to piece locking code below
+          } else {
+            return; // Skip locking the piece
+          }
+        }
+      }
+      
       // If we can't move down, the piece is set in place
       const newGrid = mergeTetrominoWithGrid(grid, currentPiece, piecePosition);
       const completedLines = get().handleCompletedLines();
       
       // Set the new grid and spawn a new piece
-      set({ grid: newGrid });
+      set({ 
+        grid: newGrid,
+        bouncyCollisionCount: 0 // Reset bounce counter
+      });
       get().setNextPiece();
       
       // Update score based on completed lines
@@ -105,6 +305,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
           linesCleared: state.linesCleared + completedLines.length
         }));
         get().updateViewportPosition();
+      }
+      
+      // Check if the piece has reached the gem
+      const gemPosition = get().level.gemPosition;
+      let gemCollected = false;
+      
+      currentPiece.shape.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+          if (cell) {
+            const gridX = piecePosition.x + colIndex;
+            const gridY = piecePosition.y + rowIndex;
+            
+            if (gridX === gemPosition.x && gridY === gemPosition.y) {
+              gemCollected = true;
+            }
+          }
+        });
+      });
+      
+      if (gemCollected) {
+        // Victory! Player has reached the gem
+        set({ gameOver: true });
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('gemCollected', { position: gemPosition });
+        }
       }
     }
   },
@@ -200,7 +425,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   
   usePowerUp: (position: Position) => {
-    const { grid } = get();
+    const { grid, level, currentPiece, onSpecialEffectActivate } = get();
     const cell = grid[position.y][position.x];
     
     if (cell.type !== CellType.POWERUP || !cell.powerUpType) return;
@@ -214,6 +439,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         newGrid = newGrid.map((row, y) => 
           y === position.y ? row.map(() => ({ type: CellType.EMPTY, color: 'transparent' })) : row
         );
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('clearRow', { y: position.y });
+        }
         break;
         
       case PowerUpType.CLEAR_COLUMN:
@@ -221,6 +449,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         newGrid = newGrid.map(row => 
           row.map((cell, x) => x === position.x ? { type: CellType.EMPTY, color: 'transparent' } : cell)
         );
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('clearColumn', { x: position.x });
+        }
         break;
         
       case PowerUpType.REMOVE_FROZEN:
@@ -232,6 +463,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
             }
           }
         }
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('removeFrozen', { x: position.x, y: position.y, radius: 1 });
+        }
         break;
         
       case PowerUpType.SLOW_FALL:
@@ -240,6 +474,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         setTimeout(() => {
           set(state => ({ fallingSpeed: state.fallingSpeed * 2 }));
         }, 10000); // Effect lasts for 10 seconds
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('slowFall', { duration: 10000 });
+        }
         break;
         
       case PowerUpType.BOMB:
@@ -249,7 +486,131 @@ export const useGameStore = create<GameStore>((set, get) => ({
             newGrid[y][x] = { type: CellType.EMPTY, color: 'transparent' };
           }
         }
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('bomb', { x: position.x, y: position.y, radius: 2 });
+        }
         break;
+        
+      case PowerUpType.SHAPE_SHIFT:
+        // Transform current piece into a different shape
+        if (currentPiece) {
+          const newPiece = generateRandomPiece();
+          newPiece.color = currentPiece.color; // Keep the same color
+          set({ currentPiece: newPiece });
+          if (onSpecialEffectActivate) {
+            onSpecialEffectActivate('shapeShift', { oldPiece: currentPiece, newPiece });
+          }
+        }
+        break;
+        
+      case PowerUpType.MULTI_CLEAR:
+        // Clear multiple random rows
+        const totalRows = newGrid.length;
+        const rowsToClear = Math.min(3, totalRows); // Clear up to 3 rows
+        const rowIndices: number[] = [];
+        
+        // Select random rows to clear
+        for (let i = 0; i < rowsToClear; i++) {
+          let randomRow: number;
+          do {
+            randomRow = Math.floor(Math.random() * totalRows);
+          } while (rowIndices.includes(randomRow));
+          rowIndices.push(randomRow);
+        }
+        
+        // Clear the selected rows
+        rowIndices.forEach(rowIndex => {
+          newGrid[rowIndex] = newGrid[rowIndex].map(() => ({ 
+            type: CellType.EMPTY, 
+            color: 'transparent' 
+          }));
+        });
+        
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('multiClear', { rows: rowIndices });
+        }
+        break;
+        
+      case PowerUpType.TIME_FREEZE:
+        // Temporarily pause the game
+        set({ paused: true });
+        setTimeout(() => {
+          set({ paused: false });
+        }, 5000); // Paused for 5 seconds
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('timeFreeze', { duration: 5000 });
+        }
+        break;
+        
+      case PowerUpType.GRAVITY_FLIP:
+        // Reverse gravity direction
+        set({ gravityFlipped: true });
+        setTimeout(() => {
+          set({ gravityFlipped: false });
+        }, 15000); // Flipped for 15 seconds
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('gravityFlip', { duration: 15000 });
+        }
+        break;
+        
+      case PowerUpType.WILD_CARD:
+        // Transform into a random power-up
+        const randomPowerUpType = Object.values(PowerUpType)
+          .filter(type => type !== PowerUpType.WILD_CARD)[
+          Math.floor(Math.random() * (Object.values(PowerUpType).length - 1))
+        ];
+        // Recursively call usePowerUp with the new power-up type
+        newGrid[position.y][position.x] = {
+          ...newGrid[position.y][position.x],
+          powerUpType: randomPowerUpType
+        };
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('wildCard', { newType: randomPowerUpType });
+        }
+        get().usePowerUp(position);
+        return; // Skip the rest of the function to avoid double effects
+        
+      case PowerUpType.GEM_FINDER:
+        // Show direction to the gem
+        set({ 
+          gemFinderActive: true,
+          gemFinderDuration: 30000 // 30 seconds
+        });
+        setTimeout(() => {
+          set({ gemFinderActive: false });
+        }, 30000);
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('gemFinder', { 
+            gemPosition: level.gemPosition,
+            duration: 30000
+          });
+        }
+        break;
+        
+      case PowerUpType.EXTRA_PIECE:
+        // Give an extra piece to place
+        const extraPiece = generateRandomPiece();
+        set({ extraPiece });
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('extraPiece', { piece: extraPiece });
+        }
+        break;
+        
+      case PowerUpType.GHOST_MODE:
+        // Enable ghost mode (pass through blocks)
+        set({ ghostModeActive: true });
+        setTimeout(() => {
+          set({ ghostModeActive: false });
+        }, 10000); // Active for 10 seconds
+        if (onSpecialEffectActivate) {
+          onSpecialEffectActivate('ghostMode', { duration: 10000 });
+        }
+        break;
+    }
+    
+    // Update the grid to remove the power-up
+    if (newGrid[position.y] && newGrid[position.y][position.x]) {
+      newGrid[position.y][position.x] = { type: CellType.EMPTY, color: 'transparent' };
     }
     
     set({ grid: newGrid });
