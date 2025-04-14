@@ -7,12 +7,27 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Get the API base URL based on environment
+const getApiBaseUrl = () => {
+  // For Electron, use the server running on port 5000
+  if (window.electron?.isElectron) {
+    return 'http://localhost:5000';
+  }
+  // For web browser dev environment, use relative path (Vite will proxy)
+  return '';
+};
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const baseUrl = getApiBaseUrl();
+  const fullUrl = `${baseUrl}${url}`;
+  
+  console.log(`Making API request to: ${fullUrl}`);
+  
+  const res = await fetch(fullUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -29,7 +44,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const baseUrl = getApiBaseUrl();
+    const fullUrl = `${baseUrl}${queryKey[0]}`;
+    
+    console.log(`Making query request to: ${fullUrl}`);
+    
+    const res = await fetch(fullUrl, {
       credentials: "include",
     });
 
